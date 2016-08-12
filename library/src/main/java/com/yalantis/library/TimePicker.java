@@ -67,6 +67,10 @@ public class TimePicker extends View {
     }
 
     private void init(AttributeSet attrs) {
+        int circleColor = Color.WHITE;
+        int textColor = Color.BLACK;
+        int strokeColor = Color.BLACK;
+
         TypedArray a = mContext.getTheme().obtainStyledAttributes(
                 attrs,
                 R.styleable.TimePicker,
@@ -82,9 +86,7 @@ public class TimePicker extends View {
         mTextPaint.setTextSize(DimenUtils.convertDpToPixel(getContext(), TEXT_SIZE_DP));
         mTextPaint.setAntiAlias(true);
 
-        int circleColor = Color.WHITE;
-        int textColor = Color.BLACK;
-        int strokeColor = Color.BLACK;
+
         try {
             mNumbersCount = a.getInteger(R.styleable.TimePicker_numbersCount, 12);
             circleColor = a.getColor(R.styleable.TimePicker_clockColor, Color.WHITE);
