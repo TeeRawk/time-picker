@@ -76,6 +76,7 @@ public class TimePicker extends View {
         mCirclePaint = new Paint();
         mCircleStrokePaint = new Paint();
         mCircleStrokePaint.setColor(ContextCompat.getColor(mContext, R.color.hoursSelectedColor));
+        //TODO extract 3 when design is ready
         mCircleStrokePaint.setTextSize(DimenUtils.convertDpToPixel(getContext(), TEXT_SIZE_DP + 3));
         mTextPaint = new Paint();
         mTextPaint.setTextSize(DimenUtils.convertDpToPixel(getContext(), TEXT_SIZE_DP));
@@ -126,6 +127,8 @@ public class TimePicker extends View {
         } else {
             canvas.rotate(-mRotateAngle, circleX, circleY);
         }
+
+        //TODO extract 5 when design is ready
         canvas.drawCircle(circleX, circleY, mCircleRadius + 5, mCircleStrokePaint);
         canvas.drawCircle(circleX, circleY, mCircleRadius, mCirclePaint);
 
