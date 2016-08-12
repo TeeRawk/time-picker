@@ -143,13 +143,13 @@ public class TimePicker extends View {
 
     private void drawNumbersOnWatchFace(Canvas canvas, float circleX, float circleY) {
         for (int i = 1; i <= mNumbersCount; i++) {
-            String text = String.valueOf(i);
+            final String text = String.valueOf(i);
             drawNumber(canvas, circleX, circleY, text, getTextX(circleX, text));
         }
     }
 
     private float getTextX(float circleX, String text) {
-        Rect textBounds = new Rect();
+        final Rect textBounds = new Rect();
         mTextPaint.getTextBounds(text, 0, text.length(), textBounds);
         if (mGravity == 0) {
             return circleX + (mCircleRadius) - textBounds.right - DimenUtils.convertDpToPixel(mContext, TEXT_OFFSETX_DP);
