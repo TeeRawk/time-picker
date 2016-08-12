@@ -14,6 +14,7 @@ import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.Transformation;
 
@@ -164,12 +165,7 @@ public class TimePicker extends View {
             }
             case MotionEvent.ACTION_UP: {
                 if (!MathUtils.isAngleAtNumber(mRotateAngle, MAX_ANGLE, mNumbersCount)) {
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            rotateToClosestNumber();
-                        }
-                    }, DEFAULT_ANIMATION_DELAY);
+                    rotateAnimation();
                 }
                 return true;
             }
@@ -183,6 +179,15 @@ public class TimePicker extends View {
     }
 
     private void handleTouch(MotionEvent event) {
+        isDrag = false;
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!isDrag) {
+                    clearAnimations();
+                }
+            }
+        }, ANIMATIONS_CLEAR_DELAY);
         touchActionDownY = (int) event.getY();
         mVelocityTracker = VelocityUtils.resetVelocityTracker(event, mVelocityTracker);
     }
@@ -195,12 +200,12 @@ public class TimePicker extends View {
             clearAnimations();
         }
         if (Math.abs(deltaX) > mSlop) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    rotateOnDrag();
-                }
-            }, DEFAULT_ANIMATION_DELAY);
+            isDrag = true;
+            if (mYVelocity != 20 && mYVelocity != -20) {
+                rotateOnDrag();
+            } else if (!isRotationAnimating) {
+                rotateAnimation();
+            }
         }
     }
 
@@ -228,6 +233,52 @@ public class TimePicker extends View {
         getCanonicalAngle();
         invalidate();
     }
+
+    private void rotateAnimation() {
+        final float tmpAngle = mRotateAngle;
+        startRotation(new Animation() {
+            @Override
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+                if (interpolatedTime < 0.8) {
+                    mRotateAngle = tmpAngle + (mYVelocity * ROTATION_STEP * interpolatedTime);
+                } else {
+                    rotateToClosestNumber();
+                }
+                if (mRotateAngle >= MAX_ANGLE || mRotateAngle <= -MAX_ANGLE) {
+                    mRotateAngle = MAX_ANGLE - Math.abs(mRotateAngle);
+                }
+
+                invalidate();
+            }
+        });
+    }
+
+    private void startRotation(Animation rotation) {
+        rotation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                isRotationAnimating = true;
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                isRotationAnimating = false;
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        rotation.setInterpolator(new DecelerateInterpolator());
+        rotation.setDuration(ROTATION_ANIMATION_DURATION);
+        if (VelocityUtils.isLowVelocity(mYVelocity)) {
+            startAnimation(rotation);
+        } else {
+            rotateToClosestNumber();
+        }
+    }
+
 
     private void clearAnimations() {
         clearAnimation();
