@@ -36,6 +36,7 @@ public class TimePicker extends View {
     private final int ROTATION_STEP = 20;
     private final static int ANIMATIONS_CLEAR_DELAY = 30;
     private final static float SLOW_ROTATION_STEP = 2f;
+    private final static double INTERPOLATED_TIME_LIMIT = 0.8;
 
     private int mCirclePositionY;
     private Paint mCirclePaint;
@@ -237,7 +238,7 @@ public class TimePicker extends View {
     }
 
     private void rotateOnDrag() {
-        mRotateAngle = mRotateAngle + (SLOW_ROTATION_STEP * (mYVelocity));
+        mRotateAngle = mRotateAngle + SLOW_ROTATION_STEP * mYVelocity;
         getCanonicalAngle();
         invalidate();
     }
@@ -247,8 +248,8 @@ public class TimePicker extends View {
         startRotation(new Animation() {
             @Override
             protected void applyTransformation(float interpolatedTime, Transformation t) {
-                if (interpolatedTime < 0.8) {
-                    mRotateAngle = tmpAngle + (mYVelocity * ROTATION_STEP * interpolatedTime);
+                if (interpolatedTime < INTERPOLATED_TIME_LIMIT) {
+                    mRotateAngle = tmpAngle + mYVelocity * ROTATION_STEP * interpolatedTime;
                 } else {
                     rotateToClosestNumber();
                 }
