@@ -46,9 +46,9 @@ public class TimePicker extends View {
     private VelocityTracker mVelocityTracker;
     private int mSlop;
     private Paint mTextPaint;
-    private int mNumbersCount;
+    private int mNumbersCount = 12;
     private float mYVelocity;
-    private int mGravity;
+    private int mGravity = 0;
     private boolean isDrag;
     private boolean isRotationAnimating;
     private Paint mCircleStrokePaint;
@@ -82,14 +82,14 @@ public class TimePicker extends View {
         mTextPaint.setTextSize(DimenUtils.convertDpToPixel(getContext(), TEXT_SIZE_DP));
         mTextPaint.setAntiAlias(true);
 
-        int circleColor;
-        int textColor;
-        int strokeColor;
+        int circleColor = Color.WHITE;
+        int textColor = Color.BLACK;
+        int strokeColor = Color.BLACK;
         try {
             mNumbersCount = a.getInteger(R.styleable.TimePicker_numbersCount, 12);
             circleColor = a.getColor(R.styleable.TimePicker_clockColor, Color.WHITE);
-            textColor = a.getColor(R.styleable.TimePicker_textColor, Color.WHITE);
-            strokeColor = a.getColor(R.styleable.TimePicker_strokeColor, Color.WHITE);
+            textColor = a.getColor(R.styleable.TimePicker_textColor, Color.BLACK);
+            strokeColor = a.getColor(R.styleable.TimePicker_strokeColor, Color.BLACK);
             mGravity = a.getInteger(R.styleable.TimePicker_gravity, 0);
         } finally {
             a.recycle();
