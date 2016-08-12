@@ -36,6 +36,7 @@ public class TimePicker extends View {
     private final int ROTATION_STEP = 20;
     private final static int ANIMATIONS_CLEAR_DELAY = 30;
     private final static float SLOW_ROTATION_STEP = 2f;
+
     private int mCirclePositionY;
     private Paint mCirclePaint;
     private int mCircleRadius;
@@ -243,10 +244,7 @@ public class TimePicker extends View {
                 } else {
                     rotateToClosestNumber();
                 }
-                if (mRotateAngle >= MAX_ANGLE || mRotateAngle <= -MAX_ANGLE) {
-                    mRotateAngle = MAX_ANGLE - Math.abs(mRotateAngle);
-                }
-
+                getCanonicalAngle();
                 invalidate();
             }
         });
