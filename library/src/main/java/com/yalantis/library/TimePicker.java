@@ -107,6 +107,7 @@ public class TimePicker extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        //checking the gravity and mirroring the time picker
         if (mGravity == 0) {
             mCirclePositionX = -mCircleRadius / 2;
         } else {
@@ -124,6 +125,8 @@ public class TimePicker extends View {
     }
 
     private void drawWatchFace(final Canvas canvas, float circleX, float circleY) {
+        // we should rotate in a different direction when view has right gravity,
+        // to ensure all two pickers rotating in the same direction
         if (mGravity == 0) {
             canvas.rotate(mRotateAngle, circleX, circleY);
         } else {
