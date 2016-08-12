@@ -28,10 +28,9 @@ import com.yalantis.library.utils.VelocityUtils;
 public class TimePicker extends View {
     private final Context mContext = getContext();
     private final static int CIRCLE_RADIUS_DP = 300;
-    private final static int MAX_ANGLE = 360;
+    public final static int MAX_ANGLE = 360;
     private final static int TEXT_OFFSETX_DP = 12;
     private final static int TEXT_SIZE_DP = 16;
-    private final static int DEFAULT_ANIMATION_DELAY = 120;
     private final static int SLOW_DOWN_ANIMATION_DURATION = 300;
     private final static int ROTATION_ANIMATION_DURATION = 2000;
     private final int ROTATION_STEP = 20;
@@ -49,12 +48,9 @@ public class TimePicker extends View {
     private int mNumbersCount;
     private float mYVelocity;
     private int mGravity;
-    private int mCircleColor;
-    private int mTextColor;
     private boolean isDrag;
     private boolean isRotationAnimating;
     private Paint mCircleStrokePaint;
-    private int mStrokeColor;
 
     public TimePicker(Context context) {
         this(context, null);
@@ -84,18 +80,21 @@ public class TimePicker extends View {
         mTextPaint.setTextSize(DimenUtils.convertDpToPixel(getContext(), TEXT_SIZE_DP));
         mTextPaint.setAntiAlias(true);
 
+        int circleColor;
+        int textColor;
+        int strokeColor;
         try {
             mNumbersCount = a.getInteger(R.styleable.TimePicker_numbersCount, 12);
-            mCircleColor = a.getColor(R.styleable.TimePicker_clockColor, Color.WHITE);
-            mTextColor = a.getColor(R.styleable.TimePicker_textColor, Color.WHITE);
-            mStrokeColor = a.getColor(R.styleable.TimePicker_strokeColor, Color.WHITE);
+            circleColor = a.getColor(R.styleable.TimePicker_clockColor, Color.WHITE);
+            textColor = a.getColor(R.styleable.TimePicker_textColor, Color.WHITE);
+            strokeColor = a.getColor(R.styleable.TimePicker_strokeColor, Color.WHITE);
             mGravity = a.getInteger(R.styleable.TimePicker_gravity, 0);
         } finally {
             a.recycle();
         }
-        mCirclePaint.setColor(mCircleColor);
-        mTextPaint.setColor(mTextColor);
-        mCircleStrokePaint.setColor(mStrokeColor);
+        mCirclePaint.setColor(circleColor);
+        mTextPaint.setColor(textColor);
+        mCircleStrokePaint.setColor(strokeColor);
 
         ViewConfiguration configuration = ViewConfiguration.get(getContext());
         mSlop = configuration.getScaledTouchSlop();
@@ -164,7 +163,7 @@ public class TimePicker extends View {
                 return true;
             }
             case MotionEvent.ACTION_UP: {
-                if (!MathUtils.isAngleAtNumber(mRotateAngle, MAX_ANGLE, mNumbersCount)) {
+                if (!MathUtils.isAngleAtNumber(mRotateAngle, mNumbersCount)) {
                     rotateAnimation();
                 }
                 return true;
@@ -211,7 +210,7 @@ public class TimePicker extends View {
 
 
     private void rotateToClosestNumber() {
-        final float distanceToClosestNumber = MathUtils.getDistanceToClosestNumber(mYVelocity, mRotateAngle, MAX_ANGLE, mNumbersCount);
+        final float distanceToClosestNumber = MathUtils.getDistanceToClosestNumber(mYVelocity, mRotateAngle, mNumbersCount);
         final float tmpAngle = mRotateAngle;
         startSlowdownAnimation(new Animation() {
             @Override
