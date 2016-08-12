@@ -165,14 +165,14 @@ public class TimePicker extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         final int index = event.getActionIndex();
-        int pointerId = event.getPointerId(index);
+        final int pointerId = event.getPointerId(index);
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN: {
                 handleTouch(event);
                 return true;
             }
             case MotionEvent.ACTION_UP: {
-                if (!MathUtils.isAngleAtNumber(mRotateAngle, mNumbersCount)) {
+                if (!MathUtils.isAngleAtNumber(mRotateAngle, mNumbersCount, MAX_ANGLE)) {
                     rotateAnimation();
                 }
                 return true;
@@ -201,15 +201,15 @@ public class TimePicker extends View {
     }
 
     private void handleSwipe(MotionEvent event, int pointerId) {
-        float deltaX = event.getRawX() - touchActionDownY;
-        float previousVelocity = mYVelocity;
+        final float deltaX = event.getRawX() - touchActionDownY;
+        final float previousVelocity = mYVelocity;
         mYVelocity = VelocityUtils.computeVelocity(event, pointerId, mVelocityTracker);
         if ((previousVelocity * mYVelocity) < 0) {
             clearAnimations();
         }
         if (Math.abs(deltaX) > mSlop) {
             isDrag = true;
-            if (mYVelocity != 20 && mYVelocity != -20) {
+            if (mYVelocity != VelocityUtils.MAX_VELOCITY && mYVelocity != -VelocityUtils.MAX_VELOCITY) {
                 rotateOnDrag();
             } else if (!isRotationAnimating) {
                 rotateAnimation();
@@ -219,7 +219,7 @@ public class TimePicker extends View {
 
 
     private void rotateToClosestNumber() {
-        final float distanceToClosestNumber = MathUtils.getDistanceToClosestNumber(mYVelocity, mRotateAngle, mNumbersCount);
+        final float distanceToClosestNumber = MathUtils.getDistanceToClosestNumber(mYVelocity, mRotateAngle, mNumbersCount, MAX_ANGLE);
         final float tmpAngle = mRotateAngle;
         startSlowdownAnimation(new Animation() {
             @Override
