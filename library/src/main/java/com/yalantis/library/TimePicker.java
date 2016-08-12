@@ -209,7 +209,7 @@ public class TimePicker extends View {
         }
         if (Math.abs(deltaX) > mSlop) {
             isDrag = true;
-            if (mYVelocity != VelocityUtils.MAX_VELOCITY && mYVelocity != -VelocityUtils.MAX_VELOCITY) {
+            if (Math.abs(mYVelocity) != VelocityUtils.MAX_VELOCITY) {
                 rotateOnDrag();
             } else if (!isRotationAnimating) {
                 rotateAnimation();
