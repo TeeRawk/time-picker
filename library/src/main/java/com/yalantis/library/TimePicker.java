@@ -40,7 +40,7 @@ public class TimePicker extends View {
     private Paint mCirclePaint;
     private int mCircleRadius;
     private int mCirclePositionX;
-    private float mRotateAngle;
+    private volatile float mRotateAngle;
     private int touchActionDownY;
     private VelocityTracker mVelocityTracker;
     private int mSlop;
