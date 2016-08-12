@@ -137,13 +137,13 @@ public class TimePicker extends View {
         canvas.drawCircle(circleX, circleY, mCircleRadius + 5, mCircleStrokePaint);
         canvas.drawCircle(circleX, circleY, mCircleRadius, mCirclePaint);
 
-        fillWatchFaceWithNumbers(canvas, circleX, circleY);
+        drawNumbersOnWatchFace(canvas, circleX, circleY);
     }
 
-    private void fillWatchFaceWithNumbers(Canvas canvas, float circleX, float circleY) {
+    private void drawNumbersOnWatchFace(Canvas canvas, float circleX, float circleY) {
         for (int i = 1; i <= mNumbersCount; i++) {
             String text = String.valueOf(i);
-            drawNumberOnWatchFace(canvas, circleX, circleY, text, getTextX(circleX, text));
+            drawNumber(canvas, circleX, circleY, text, getTextX(circleX, text));
         }
     }
 
@@ -157,7 +157,7 @@ public class TimePicker extends View {
         }
     }
 
-    private void drawNumberOnWatchFace(Canvas canvas, float circleX, float circleY, String text, float textX) {
+    private void drawNumber(Canvas canvas, float circleX, float circleY, String text, float textX) {
         canvas.rotate(MAX_ANGLE / mNumbersCount, circleX, circleY);
         canvas.drawText(text, textX, circleY, mTextPaint);
     }
