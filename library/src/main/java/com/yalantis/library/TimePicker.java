@@ -14,6 +14,7 @@ import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.Transformation;
 
@@ -27,33 +28,32 @@ import com.yalantis.library.utils.VelocityUtils;
 public class TimePicker extends View {
     private final Context mContext = getContext();
     private final static int CIRCLE_RADIUS_DP = 300;
-    private final static int MAX_ANGLE = 360;
+    public final static int MAX_ANGLE = 360;
     private final static int TEXT_OFFSETX_DP = 12;
     private final static int TEXT_SIZE_DP = 16;
-    private final static int DEFAULT_ANIMATION_DELAY = 120;
     private final static int SLOW_DOWN_ANIMATION_DURATION = 300;
     private final static int ROTATION_ANIMATION_DURATION = 2000;
     private final int ROTATION_STEP = 20;
     private final static int ANIMATIONS_CLEAR_DELAY = 30;
     private final static float SLOW_ROTATION_STEP = 2f;
+    private final static double INTERPOLATED_TIME_LIMIT = 0.8;
+
     private int mCirclePositionY;
     private Paint mCirclePaint;
     private int mCircleRadius;
     private int mCirclePositionX;
-    private float mRotateAngle;
+    private volatile float mRotateAngle;
     private int touchActionDownY;
     private VelocityTracker mVelocityTracker;
     private int mSlop;
     private Paint mTextPaint;
-    private int mNumbersCount;
+    private int mNumbersCount = 12;
     private float mYVelocity;
-    private int mGravity;
-    private int mCircleColor;
-    private int mTextColor;
+    private int mGravity = 0;
     private boolean isDrag;
     private boolean isRotationAnimating;
     private Paint mCircleStrokePaint;
-    private int mStrokeColor;
+    private int mAngleBetweenNumbers;
 
     public TimePicker(Context context) {
         this(context, null);
@@ -69,6 +69,10 @@ public class TimePicker extends View {
     }
 
     private void init(AttributeSet attrs) {
+        int circleColor = Color.WHITE;
+        int textColor = Color.BLACK;
+        int strokeColor = Color.BLACK;
+
         TypedArray a = mContext.getTheme().obtainStyledAttributes(
                 attrs,
                 R.styleable.TimePicker,
@@ -78,23 +82,26 @@ public class TimePicker extends View {
         mCirclePaint = new Paint();
         mCircleStrokePaint = new Paint();
         mCircleStrokePaint.setColor(ContextCompat.getColor(mContext, R.color.hoursSelectedColor));
+        //TODO extract 3 when design is ready
         mCircleStrokePaint.setTextSize(DimenUtils.convertDpToPixel(getContext(), TEXT_SIZE_DP + 3));
         mTextPaint = new Paint();
         mTextPaint.setTextSize(DimenUtils.convertDpToPixel(getContext(), TEXT_SIZE_DP));
         mTextPaint.setAntiAlias(true);
 
+
         try {
             mNumbersCount = a.getInteger(R.styleable.TimePicker_numbersCount, 12);
-            mCircleColor = a.getColor(R.styleable.TimePicker_clockColor, Color.WHITE);
-            mTextColor = a.getColor(R.styleable.TimePicker_textColor, Color.WHITE);
-            mStrokeColor = a.getColor(R.styleable.TimePicker_strokeColor, Color.WHITE);
+            circleColor = a.getColor(R.styleable.TimePicker_clockColor, Color.WHITE);
+            textColor = a.getColor(R.styleable.TimePicker_textColor, Color.BLACK);
+            strokeColor = a.getColor(R.styleable.TimePicker_strokeColor, Color.BLACK);
             mGravity = a.getInteger(R.styleable.TimePicker_gravity, 0);
         } finally {
             a.recycle();
         }
-        mCirclePaint.setColor(mCircleColor);
-        mTextPaint.setColor(mTextColor);
-        mCircleStrokePaint.setColor(mStrokeColor);
+        mCirclePaint.setColor(circleColor);
+        mTextPaint.setColor(textColor);
+        mCircleStrokePaint.setColor(strokeColor);
+        mAngleBetweenNumbers = MAX_ANGLE / mNumbersCount;
 
         ViewConfiguration configuration = ViewConfiguration.get(getContext());
         mSlop = configuration.getScaledTouchSlop();
@@ -103,6 +110,7 @@ public class TimePicker extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        //checking the gravity and mirroring the time picker
         if (mGravity == 0) {
             mCirclePositionX = -mCircleRadius / 2;
         } else {
@@ -120,26 +128,30 @@ public class TimePicker extends View {
     }
 
     private void drawWatchFace(final Canvas canvas, float circleX, float circleY) {
+        // we should rotate in a different direction when view has right gravity,
+        // to ensure all two pickers rotating in the same direction
         if (mGravity == 0) {
             canvas.rotate(mRotateAngle, circleX, circleY);
         } else {
             canvas.rotate(-mRotateAngle, circleX, circleY);
         }
+
+        //TODO extract 5 when design is ready
         canvas.drawCircle(circleX, circleY, mCircleRadius + 5, mCircleStrokePaint);
         canvas.drawCircle(circleX, circleY, mCircleRadius, mCirclePaint);
 
-        fillWatchFaceWithNumbers(canvas, circleX, circleY);
+        drawNumbersOnWatchFace(canvas, circleX, circleY);
     }
 
-    private void fillWatchFaceWithNumbers(Canvas canvas, float circleX, float circleY) {
+    private void drawNumbersOnWatchFace(Canvas canvas, float circleX, float circleY) {
         for (int i = 1; i <= mNumbersCount; i++) {
-            String text = String.valueOf(i);
-            drawNumberOnWatchFace(canvas, circleX, circleY, text, getTextX(circleX, text));
+            final String text = String.valueOf(i);
+            drawNumber(canvas, circleX, circleY, text, getTextX(circleX, text));
         }
     }
 
     private float getTextX(float circleX, String text) {
-        Rect textBounds = new Rect();
+        final Rect textBounds = new Rect();
         mTextPaint.getTextBounds(text, 0, text.length(), textBounds);
         if (mGravity == 0) {
             return circleX + (mCircleRadius) - textBounds.right - DimenUtils.convertDpToPixel(mContext, TEXT_OFFSETX_DP);
@@ -148,7 +160,7 @@ public class TimePicker extends View {
         }
     }
 
-    private void drawNumberOnWatchFace(Canvas canvas, float circleX, float circleY, String text, float textX) {
+    private void drawNumber(Canvas canvas, float circleX, float circleY, String text, float textX) {
         canvas.rotate(MAX_ANGLE / mNumbersCount, circleX, circleY);
         canvas.drawText(text, textX, circleY, mTextPaint);
     }
@@ -156,20 +168,15 @@ public class TimePicker extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         final int index = event.getActionIndex();
-        int pointerId = event.getPointerId(index);
+        final int pointerId = event.getPointerId(index);
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN: {
                 handleTouch(event);
                 return true;
             }
             case MotionEvent.ACTION_UP: {
-                if (!MathUtils.isAngleAtNumber(mRotateAngle, MAX_ANGLE, mNumbersCount)) {
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            rotateToClosestNumber();
-                        }
-                    }, DEFAULT_ANIMATION_DELAY);
+                if (!MathUtils.isAngleAtNumber(mRotateAngle, mNumbersCount, MAX_ANGLE)) {
+                    rotateAnimation();
                 }
                 return true;
             }
@@ -183,30 +190,39 @@ public class TimePicker extends View {
     }
 
     private void handleTouch(MotionEvent event) {
+        isDrag = false;
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!isDrag) {
+                    clearAnimations();
+                }
+            }
+        }, ANIMATIONS_CLEAR_DELAY);
         touchActionDownY = (int) event.getY();
         mVelocityTracker = VelocityUtils.resetVelocityTracker(event, mVelocityTracker);
     }
 
     private void handleSwipe(MotionEvent event, int pointerId) {
-        float deltaX = event.getRawX() - touchActionDownY;
-        float previousVelocity = mYVelocity;
+        final float deltaX = event.getRawX() - touchActionDownY;
+        final float previousVelocity = mYVelocity;
         mYVelocity = VelocityUtils.computeVelocity(event, pointerId, mVelocityTracker);
         if ((previousVelocity * mYVelocity) < 0) {
             clearAnimations();
         }
         if (Math.abs(deltaX) > mSlop) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    rotateOnDrag();
-                }
-            }, DEFAULT_ANIMATION_DELAY);
+            isDrag = true;
+            if (Math.abs(mYVelocity) != VelocityUtils.MAX_VELOCITY) {
+                rotateOnDrag();
+            } else if (!isRotationAnimating) {
+                rotateAnimation();
+            }
         }
     }
 
 
     private void rotateToClosestNumber() {
-        final float distanceToClosestNumber = MathUtils.getDistanceToClosestNumber(mYVelocity, mRotateAngle, MAX_ANGLE, mNumbersCount);
+        final float distanceToClosestNumber = MathUtils.getDistanceToClosestNumber(mYVelocity, mRotateAngle, mAngleBetweenNumbers);
         final float tmpAngle = mRotateAngle;
         startSlowdownAnimation(new Animation() {
             @Override
@@ -224,10 +240,53 @@ public class TimePicker extends View {
     }
 
     private void rotateOnDrag() {
-        mRotateAngle = mRotateAngle + (SLOW_ROTATION_STEP * (mYVelocity));
+        mRotateAngle = mRotateAngle + SLOW_ROTATION_STEP * mYVelocity;
         getCanonicalAngle();
         invalidate();
     }
+
+    private void rotateAnimation() {
+        final float tmpAngle = mRotateAngle;
+        startRotation(new Animation() {
+            @Override
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+                if (interpolatedTime < INTERPOLATED_TIME_LIMIT) {
+                    mRotateAngle = tmpAngle + mYVelocity * ROTATION_STEP * interpolatedTime;
+                } else {
+                    rotateToClosestNumber();
+                }
+                getCanonicalAngle();
+                invalidate();
+            }
+        });
+    }
+
+    private void startRotation(Animation rotation) {
+        rotation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                isRotationAnimating = true;
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                isRotationAnimating = false;
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        rotation.setInterpolator(new DecelerateInterpolator());
+        rotation.setDuration(ROTATION_ANIMATION_DURATION);
+        if (VelocityUtils.isLowVelocity(mYVelocity)) {
+            startAnimation(rotation);
+        } else {
+            rotateToClosestNumber();
+        }
+    }
+
 
     private void clearAnimations() {
         clearAnimation();

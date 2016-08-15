@@ -5,21 +5,21 @@ package com.yalantis.library.utils;
  */
 public class MathUtils {
 
-    public static float getDistanceToClosestNumber(float velocity, float rotateAngle, int maxAngle, int numberCount) {
+    public static float getDistanceToClosestNumber(float velocity, float rotateAngle, int angleBetweenNumbers) {
         float distanceToClosestNumber;//Velocity < 0 when swipe down , Velocity> 0 when swipe up
         if (VelocityUtils.isLowVelocity(velocity)) {
             if (velocity > 0) {
-                distanceToClosestNumber = rotateAngle - (maxAngle / numberCount) * (float) Math.ceil((rotateAngle) / (maxAngle / numberCount));
+                distanceToClosestNumber = rotateAngle - angleBetweenNumbers * (float) Math.ceil((rotateAngle) / angleBetweenNumbers);
             } else {
-                distanceToClosestNumber = rotateAngle - (maxAngle / numberCount) * (float) Math.floor((rotateAngle) / (maxAngle / numberCount));
+                distanceToClosestNumber = rotateAngle - angleBetweenNumbers * (float) Math.floor((rotateAngle) / angleBetweenNumbers);
             }
         } else {
-            distanceToClosestNumber = rotateAngle - (maxAngle / numberCount) * (float) Math.round((rotateAngle) / (maxAngle / numberCount));
+            distanceToClosestNumber = rotateAngle - angleBetweenNumbers * (float) Math.round(rotateAngle / angleBetweenNumbers);
         }
         return distanceToClosestNumber;
     }
 
-    public static boolean isAngleAtNumber(float rotateAngle, int maxAngle, int numbersCount) {
+    public static boolean isAngleAtNumber(float rotateAngle, int numbersCount, int maxAngle) {
         return Math.abs(rotateAngle) % (maxAngle / numbersCount) == 0;
     }
 
