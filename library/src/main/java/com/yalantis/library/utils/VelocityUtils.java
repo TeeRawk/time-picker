@@ -10,9 +10,10 @@ import android.view.VelocityTracker;
 public class VelocityUtils {
     public final static int MIN_VELOCITY = 1;
     public final static int MAX_VELOCITY = 20;
+    private static final int LOW_VELOCITY = 2;
 
     public static boolean isLowVelocity(float velocity) {
-        return velocity > 2 || velocity < -2;
+        return velocity > LOW_VELOCITY || velocity < -LOW_VELOCITY;
     }
 
     public static float computeVelocity(MotionEvent event, int pointerId, VelocityTracker velocityTracker) {
