@@ -53,6 +53,7 @@ public class TimePicker extends View {
     private boolean isDrag;
     private boolean isRotationAnimating;
     private Paint mCircleStrokePaint;
+    private int mAngleBetweenNumbers;
 
     public TimePicker(Context context) {
         this(context, null);
@@ -100,6 +101,7 @@ public class TimePicker extends View {
         mCirclePaint.setColor(circleColor);
         mTextPaint.setColor(textColor);
         mCircleStrokePaint.setColor(strokeColor);
+        mAngleBetweenNumbers = MAX_ANGLE / mNumbersCount;
 
         ViewConfiguration configuration = ViewConfiguration.get(getContext());
         mSlop = configuration.getScaledTouchSlop();
@@ -220,7 +222,7 @@ public class TimePicker extends View {
 
 
     private void rotateToClosestNumber() {
-        final float distanceToClosestNumber = MathUtils.getDistanceToClosestNumber(mYVelocity, mRotateAngle, mNumbersCount, MAX_ANGLE);
+        final float distanceToClosestNumber = MathUtils.getDistanceToClosestNumber(mYVelocity, mRotateAngle, mAngleBetweenNumbers);
         final float tmpAngle = mRotateAngle;
         startSlowdownAnimation(new Animation() {
             @Override
