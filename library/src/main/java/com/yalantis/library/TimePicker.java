@@ -243,6 +243,7 @@ public class TimePicker extends View {
     private void drawNumbersOnWatchFace(Canvas canvas, int selectedNumber) {
         for (int i = 1; i <= mNumbersCount; i++) {
             final String text = String.valueOf(i);
+            rotateCircleOneNotch(canvas);
             drawNumber(canvas, text, selectedNumber);
         }
     }
@@ -258,17 +259,20 @@ public class TimePicker extends View {
     }
 
     private void drawNumber(Canvas canvas, String text, int selectedNumber) {
-        if (mGravity == 0) {
-            canvas.rotate(-MAX_ANGLE / mNumbersCount, mCirclePositionX, mCirclePositionY);
-
-        } else {
-            canvas.rotate(MAX_ANGLE / mNumbersCount, mCirclePositionX, mCirclePositionY);
-        }
         float textX = getTextX(text);
         if (Integer.valueOf(text) == selectedNumber) {
             canvas.drawText(text, textX, mCirclePositionY, mSelectedTextPaint);
         } else {
             canvas.drawText(text, textX, mCirclePositionY, mTextPaint);
+        }
+    }
+
+    private void rotateCircleOneNotch(Canvas canvas) {
+        if (mGravity == 0) {
+            canvas.rotate(-MAX_ANGLE / mNumbersCount, mCirclePositionX, mCirclePositionY);
+
+        } else {
+            canvas.rotate(MAX_ANGLE / mNumbersCount, mCirclePositionX, mCirclePositionY);
         }
     }
 
