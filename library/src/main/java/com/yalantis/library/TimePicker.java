@@ -86,6 +86,7 @@ public class TimePicker extends View {
         mCircleRadius = DimenUtils.convertDpToPixel(mContext, CIRCLE_RADIUS_DP);
         mCirclePaint = new Paint();
         mSelectedTextPaint = new Paint();
+        //TODO extract 3 when design is ready
         mSelectedTextPaint.setTextSize(DimenUtils.convertDpToPixel(getContext(), TEXT_SIZE_DP + 3));
 
         mCircleStrokePaint = new Paint();
