@@ -12,6 +12,7 @@
         android:layout_weight="1"
         app:clockColor="@color/clockBG"
         app:numbersCount="24"
+        app:selectedTextColor="@color/hoursSelectedColor"
         app:strokeColor="@color/hoursSelectedColor"/>
 
     <com.yalantis.library.TimePicker
@@ -20,8 +21,10 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         app:clockColor="@color/clockBG"
+        android:clickable="false"
         app:gravity="right"
         app:numbersCount="60"
+        app:selectedTextColor="@color/minutesSelectedColor"
         app:strokeColor="@color/minutesSelectedColor"/>
 
 </LinearLayout>
