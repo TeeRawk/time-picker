@@ -134,7 +134,7 @@ public class TimePicker extends View {
 
     private TimePicker(Context context, int numbersCount, int textColor, int highlightColor, int circleColor, int selectedNumber, int textSize, int gravity, int circleRadius) {
         this(context, null);
-        setSelectedNumber(selectedNumber);
+        mRotateAngle = selectedNumber * mAngleBetweenNumbers;
         mGravity = gravity;
         mNumbersCount = numbersCount;
         mCircleRadius = circleRadius;
