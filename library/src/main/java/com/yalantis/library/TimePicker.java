@@ -139,6 +139,7 @@ public class TimePicker extends View {
         mNumbersCount = numbersCount;
         mCircleRadius = circleRadius;
         mHighlightPaint.setColor(highlightColor);
+        mHighlightPaint.setTextSize(textSize);
         mTextPaint.setColor(textColor);
         mTextPaint.setTextSize(textSize);
         mCirclePaint.setColor(circleColor);
@@ -180,8 +181,6 @@ public class TimePicker extends View {
             } finally {
                 a.recycle();
             }
-
-
             initPaints(circleColor, textColor, highlightColor, textSize);
             mCircleRadius = DimenUtils.convertDpToPixel(mContext, CIRCLE_RADIUS_DP);
         }
