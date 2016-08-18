@@ -134,7 +134,15 @@ public class TimePicker extends View {
 
     private TimePicker(Context context, int numbersCount, int textColor, int highlightColor, int circleColor, int selectedNumber, int textSize, int gravity, int circleRadius) {
         this(context, null);
-        initFromBuilder(numbersCount, textColor, highlightColor, circleColor, selectedNumber, textSize, gravity, circleRadius);
+        setSelectedNumber(selectedNumber);
+        mGravity = gravity;
+        mNumbersCount = numbersCount;
+        mSlop = getTouchSlop();
+        mCircleRadius = circleRadius;
+        mHighlightPaint.setColor(highlightColor);
+        mTextPaint.setColor(textColor);
+        mTextPaint.setTextSize(textSize);
+        mCirclePaint.setColor(circleColor);
     }
 
     public TimePicker(Context context, AttributeSet attrs) {
@@ -144,15 +152,6 @@ public class TimePicker extends View {
     public TimePicker(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(attrs);
-    }
-
-    private void initFromBuilder(int numbersCount, int textColor, int highlightColor, int circleColor, int selectedNumber, int textSize, int gravity, int circleRadius) {
-        setSelectedNumber(selectedNumber);
-        mGravity = gravity;
-        mNumbersCount = numbersCount;
-        initPaints(circleColor, textColor, highlightColor, textSize);
-        mSlop = getTouchSlop();
-        mCircleRadius = circleRadius;
     }
 
     private void init(AttributeSet attrs) {
