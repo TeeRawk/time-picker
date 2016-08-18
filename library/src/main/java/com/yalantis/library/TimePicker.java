@@ -58,77 +58,77 @@ public class TimePicker extends View {
     private int mAngleBetweenNumbers;
 
     public static class TimePickerBuilder {
-        private final Context context;
-        private int circleRadius;
-        private int textColor;
-        private int highLightColor;
-        private int circleColor;
-        private int textSize;
-        private int selectedNumber;
-        private int gravity;
-        private int numbersCount;
+        private final Context mContext;
+        private int mCircleRadius;
+        private int mTextColor;
+        private int mHighLightColor;
+        private int mCircleColor;
+        private int mTextSize;
+        private int mSelectedNumber;
+        private int mGravity;
+        private int mNumbersCount;
 
         public TimePickerBuilder(Context context) {
-            this.context = context;
+            this.mContext = context;
         }
 
         public TimePickerBuilder setCircleRadius(int circleRadius) {
-            this.circleRadius = circleRadius;
+            this.mCircleRadius = circleRadius;
             return this;
         }
 
         protected TimePickerBuilder setTextColor(@ColorInt int color) {
-            textColor = color;
+            mTextColor = color;
             return this;
         }
 
         protected TimePickerBuilder setTextColorRes(@ColorRes int color) {
-            textColor = ContextCompat.getColor(context, color);
+            mTextColor = ContextCompat.getColor(mContext, color);
             return this;
         }
 
         public TimePickerBuilder setHighlightColor(@ColorInt int color) {
-            highLightColor = color;
+            mHighLightColor = color;
             return this;
         }
 
         public TimePickerBuilder setHighlightColorRes(@ColorRes int color) {
-            highLightColor = ContextCompat.getColor(context, color);
+            mHighLightColor = ContextCompat.getColor(mContext, color);
             return this;
         }
 
         public TimePickerBuilder setCircleColor(@ColorInt int color) {
-            circleColor = color;
+            mCircleColor = color;
             return this;
         }
 
         public TimePickerBuilder setCircleColorRes(@ColorRes int color) {
-            circleColor = ContextCompat.getColor(context, color);
+            mCircleColor = ContextCompat.getColor(mContext, color);
             return this;
         }
 
         public TimePickerBuilder setTextSize(int size) {
-            textSize = size;
+            mTextSize = size;
             return this;
         }
 
         public TimePickerBuilder setSelectedNumber(int number) {
-            selectedNumber = number;
+            mSelectedNumber = number;
             return this;
         }
 
         public TimePickerBuilder setGravity(int gravity) {
-            this.gravity = gravity;
+            this.mGravity = gravity;
             return this;
         }
 
         public TimePickerBuilder setNumbersCount(int count) {
-            numbersCount = count;
+            mNumbersCount = count;
             return this;
         }
 
         public TimePicker build() {
-            return new TimePicker(context, numbersCount, textColor, highLightColor, circleColor, selectedNumber, textSize, gravity, circleRadius);
+            return new TimePicker(mContext, mNumbersCount, mTextColor, mHighLightColor, mCircleColor, mSelectedNumber, mTextSize, mGravity, mCircleRadius);
         }
     }
 
