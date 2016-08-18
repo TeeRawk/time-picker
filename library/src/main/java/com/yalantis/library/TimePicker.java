@@ -139,7 +139,8 @@ public class TimePicker extends View {
         mNumbersCount = numbersCount;
         mCircleRadius = circleRadius;
         mHighlightPaint.setColor(highlightColor);
-        mHighlightPaint.setTextSize(textSize);
+        //TODO extract 3 when design is ready
+        mHighlightPaint.setTextSize(textSize + 3);
         mTextPaint.setColor(textColor);
         mTextPaint.setTextSize(textSize);
         mCirclePaint.setColor(circleColor);
@@ -162,7 +163,6 @@ public class TimePicker extends View {
 
         mCirclePaint = new Paint();
         mHighlightPaint = new Paint();
-        //TODO extract 3 when design is ready
         mTextPaint = new Paint();
 
         if (attrs != null) {
@@ -195,6 +195,7 @@ public class TimePicker extends View {
     }
 
     private void initPaints(int circleColor, int textColor, int highlightColor, int textSize) {
+        //TODO extract 3 when design is ready
         mHighlightPaint.setTextSize(DimenUtils.convertDpToPixel(getContext(), TEXT_SIZE_DP + 3));
         mTextPaint.setAntiAlias(true);
         mCirclePaint.setColor(circleColor);
