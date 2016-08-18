@@ -13,6 +13,7 @@ import com.yalantis.library.utils.DimenUtils;
  * Created by Alexey on 08.08.2016.
  */
 public class ClockFace extends LinearLayout {
+    private final static int CIRCLE_RADIUS_DP = 200;
     private final static int TEXT_SIZE_DP = 16;
     private final static int DEFAULT_HOURS_COUNT = 24;
     private final int DEFAULT_MINUTES_COUNT = 60;
@@ -34,8 +35,9 @@ public class ClockFace extends LinearLayout {
         int hoursSelectedTextColor = Color.RED;
         int hoursTextColor = Color.BLACK;
         int minutesTextColor = Color.BLACK;
-        int textSize = DimenUtils.convertDpToPixel(context, TEXT_SIZE_DP);
+        int textSize = DimenUtils.convertSpToPixel(context, TEXT_SIZE_DP);
         int hoursCount = DEFAULT_HOURS_COUNT;
+        int circleRadius = DimenUtils.convertDpToPixel(context, CIRCLE_RADIUS_DP);
 
 
         TypedArray a = context.getTheme().obtainStyledAttributes(
@@ -52,11 +54,13 @@ public class ClockFace extends LinearLayout {
             minutesTextColor = a.getColor(R.styleable.ClockFace_minutesTextColor, minutesTextColor);
             textSize = a.getDimensionPixelSize(R.styleable.ClockFace_numbersSize, textSize);
             hoursCount = a.getInteger(R.styleable.ClockFace_hoursCount, hoursCount);
+            circleRadius = a.getInteger(R.styleable.ClockFace_circleRadius, circleRadius);
         } finally {
             a.recycle();
         }
 
         mHoursPicker = new TimePicker.TimePickerBuilder(getContext())
+                .setCircleRadius(circleRadius)
                 .setTextColor(hoursTextColor)
                 .setCircleColor(hoursClockColor)
                 .setHighlightColor(hoursSelectedTextColor)
@@ -65,6 +69,7 @@ public class ClockFace extends LinearLayout {
                 .build();
 
         TimePicker minutePicker = new TimePicker.TimePickerBuilder(getContext())
+                .setCircleRadius(circleRadius)
                 .setTextSize(textSize)
                 .setHighlightColor(minutesSelectedTextColor)
                 .setTextColor(minutesTextColor)

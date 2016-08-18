@@ -9,11 +9,11 @@
     <com.yalantis.library.ClockFace
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:hoursClockColor="@color/clockBG"
+        app:hoursCount="24"
         app:hoursHighlightColor="@color/hoursSelectedColor"
+        app:hoursTextColor="@color/textColor"
+        app:minutesClockColor="@color/clockBG"
         app:minutesHighlightColor="@color/minutesSelectedColor"
-        app:hoursTextColor = "@color/textColor"
-        app:minutesTextColor = "@color/textColor"
-        app:hoursCount= "24"
-        app:hoursClockColor = "@color/clockBG"
-        app:minutesClockColor = "@color/clockBG"/>
+        app:minutesTextColor="@color/textColor"/>
 </LinearLayout>
