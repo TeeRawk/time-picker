@@ -45,7 +45,7 @@ public class TimePicker extends View {
     private int mCircleRadius;
     private int mCirclePositionX;
     private volatile float mRotateAngle;
-    private int touchActionDownY;
+    private int mTouchActionDownY;
     private VelocityTracker mVelocityTracker;
     private int mSlop;
     private Paint mTextPaint;
@@ -58,8 +58,7 @@ public class TimePicker extends View {
     private int mAngleBetweenNumbers;
 
     public static class TimePickerBuilder {
-        private final Context mContext;
-        private TimePicker mTimePicker;
+        private final Context context;
         private int circleRadius;
         private int textColor;
         private int highLightColor;
@@ -70,7 +69,7 @@ public class TimePicker extends View {
         private int numbersCount;
 
         public TimePickerBuilder(Context context) {
-            mContext = context;
+            this.context = context;
         }
 
         public TimePickerBuilder setCircleRadius(int circleRadius) {
@@ -84,7 +83,7 @@ public class TimePicker extends View {
         }
 
         protected TimePickerBuilder setTextColorRes(@ColorRes int color) {
-            textColor = ContextCompat.getColor(mContext, color);
+            textColor = ContextCompat.getColor(context, color);
             return this;
         }
 
@@ -94,7 +93,7 @@ public class TimePicker extends View {
         }
 
         public TimePickerBuilder setHighlightColorRes(@ColorRes int color) {
-            highLightColor = ContextCompat.getColor(mContext, color);
+            highLightColor = ContextCompat.getColor(context, color);
             return this;
         }
 
@@ -104,7 +103,7 @@ public class TimePicker extends View {
         }
 
         public TimePickerBuilder setCircleColorRes(@ColorRes int color) {
-            circleColor = ContextCompat.getColor(mContext, color);
+            circleColor = ContextCompat.getColor(context, color);
             return this;
         }
 
@@ -129,7 +128,7 @@ public class TimePicker extends View {
         }
 
         public TimePicker build() {
-            return new TimePicker(mContext, numbersCount, textColor, highLightColor, circleColor, selectedNumber, textSize, gravity, circleRadius);
+            return new TimePicker(context, numbersCount, textColor, highLightColor, circleColor, selectedNumber, textSize, gravity, circleRadius);
         }
     }
 
@@ -138,11 +137,11 @@ public class TimePicker extends View {
         initFromBuilder(numbersCount, textColor, highlightColor, circleColor, selectedNumber, textSize, gravity, circleRadius);
     }
 
-    private TimePicker(Context context, AttributeSet attrs) {
+    public TimePicker(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    private TimePicker(Context context, AttributeSet attrs, int defStyleAttr) {
+    public TimePicker(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(attrs);
     }
@@ -342,12 +341,12 @@ public class TimePicker extends View {
                 }
             }
         }, ANIMATIONS_CLEAR_DELAY);
-        touchActionDownY = (int) event.getY();
+        mTouchActionDownY = (int) event.getY();
         mVelocityTracker = VelocityUtils.resetVelocityTracker(event, mVelocityTracker);
     }
 
     private void handleSwipe(MotionEvent event, int pointerId) {
-        final float deltaX = event.getRawX() - touchActionDownY;
+        final float deltaX = event.getRawX() - mTouchActionDownY;
         final float previousVelocity = mYVelocity;
         mYVelocity = VelocityUtils.computeVelocity(event, pointerId, mVelocityTracker);
         if ((previousVelocity * mYVelocity) < 0) {

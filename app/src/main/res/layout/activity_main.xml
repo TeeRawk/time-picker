@@ -16,4 +16,5 @@
         app:minutesClockColor="@color/clockBG"
         app:minutesHighlightColor="@color/minutesSelectedColor"
         app:minutesTextColor="@color/textColor"/>
+
 </LinearLayout>
