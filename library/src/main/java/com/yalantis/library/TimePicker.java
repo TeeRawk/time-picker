@@ -137,7 +137,6 @@ public class TimePicker extends View {
         setSelectedNumber(selectedNumber);
         mGravity = gravity;
         mNumbersCount = numbersCount;
-        mSlop = getTouchSlop();
         mCircleRadius = circleRadius;
         mHighlightPaint.setColor(highlightColor);
         mTextPaint.setColor(textColor);
@@ -160,27 +159,34 @@ public class TimePicker extends View {
         int highlightColor = Color.RED;
         int textSize = DimenUtils.convertDpToPixel(getContext(), TEXT_SIZE_DP);
 
-        TypedArray a = mContext.getTheme().obtainStyledAttributes(
-                attrs,
-                R.styleable.TimePicker,
-                0, 0);
+        mCirclePaint = new Paint();
+        mHighlightPaint = new Paint();
+        //TODO extract 3 when design is ready
+        mTextPaint = new Paint();
 
-        try {
-            mNumbersCount = a.getInteger(R.styleable.TimePicker_numbersCount, mNumbersCount);
-            circleColor = a.getColor(R.styleable.TimePicker_clockColor, circleColor);
-            textColor = a.getColor(R.styleable.TimePicker_textColor, textColor);
-            highlightColor = a.getColor(R.styleable.TimePicker_highlightColor, highlightColor);
-            textSize = a.getDimensionPixelSize(R.styleable.TimePicker_textSize, textSize);
-            mGravity = a.getInteger(R.styleable.TimePicker_gravity, mGravity);
-        } finally {
-            a.recycle();
+        if (attrs != null) {
+            TypedArray a = mContext.getTheme().obtainStyledAttributes(
+                    attrs,
+                    R.styleable.TimePicker,
+                    0, 0);
+
+            try {
+                mNumbersCount = a.getInteger(R.styleable.TimePicker_numbersCount, mNumbersCount);
+                circleColor = a.getColor(R.styleable.TimePicker_clockColor, circleColor);
+                textColor = a.getColor(R.styleable.TimePicker_textColor, textColor);
+                highlightColor = a.getColor(R.styleable.TimePicker_highlightColor, highlightColor);
+                textSize = a.getDimensionPixelSize(R.styleable.TimePicker_textSize, textSize);
+                mGravity = a.getInteger(R.styleable.TimePicker_gravity, mGravity);
+            } finally {
+                a.recycle();
+            }
+
+
+            initPaints(circleColor, textColor, highlightColor, textSize);
+            mCircleRadius = DimenUtils.convertDpToPixel(mContext, CIRCLE_RADIUS_DP);
         }
 
-        initPaints(circleColor, textColor, highlightColor, textSize);
-
-        mCircleRadius = DimenUtils.convertDpToPixel(mContext, CIRCLE_RADIUS_DP);
         mAngleBetweenNumbers = MAX_ANGLE / mNumbersCount;
-
         mSlop = getTouchSlop();
     }
 
@@ -190,12 +196,6 @@ public class TimePicker extends View {
     }
 
     private void initPaints(int circleColor, int textColor, int highlightColor, int textSize) {
-
-        mCirclePaint = new Paint();
-        mHighlightPaint = new Paint();
-        //TODO extract 3 when design is ready
-        mTextPaint = new Paint();
-
         mHighlightPaint.setTextSize(DimenUtils.convertDpToPixel(getContext(), TEXT_SIZE_DP + 3));
         mTextPaint.setAntiAlias(true);
         mCirclePaint.setColor(circleColor);
