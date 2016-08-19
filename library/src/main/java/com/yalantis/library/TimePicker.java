@@ -138,12 +138,7 @@ public class TimePicker extends View {
         mGravity = gravity;
         mNumbersCount = numbersCount;
         mCircleRadius = circleRadius;
-        mHighlightPaint.setColor(highlightColor);
-        //TODO extract 3 when design is ready
-        mHighlightPaint.setTextSize(textSize + 3);
-        mTextPaint.setColor(textColor);
-        mTextPaint.setTextSize(textSize);
-        mCirclePaint.setColor(circleColor);
+        initPaints(circleColor, textColor, highlightColor, textSize);
     }
 
     public TimePicker(Context context, AttributeSet attrs) {
