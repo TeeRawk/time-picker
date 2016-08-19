@@ -213,8 +213,6 @@ public class TimePicker extends View {
         float selectedNumber = (float) Math.floor(mRotateAngle) / (MAX_ANGLE / mNumbersCount);
         if (selectedNumber <= 0) {
             selectedNumber = mNumbersCount + selectedNumber;
-        } else if (selectedNumber == 0) {
-            selectedNumber = mNumbersCount;
         }
         return selectedNumber;
     }
