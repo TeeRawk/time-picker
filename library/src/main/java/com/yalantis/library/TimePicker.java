@@ -7,6 +7,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Handler;
+import android.support.annotation.ColorInt;
+import android.support.annotation.ColorRes;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -27,7 +29,7 @@ import com.yalantis.library.utils.VelocityUtils;
  */
 public class TimePicker extends View {
     private final Context mContext = getContext();
-    private final static int CIRCLE_RADIUS_DP = 300;
+    private final static int CIRCLE_RADIUS_DP = 200;
     public final static int MAX_ANGLE = 360;
     private final static int TEXT_OFFSETX_DP = 12;
     private final static int TEXT_SIZE_DP = 16;
@@ -43,7 +45,7 @@ public class TimePicker extends View {
     private int mCircleRadius;
     private int mCirclePositionX;
     private volatile float mRotateAngle;
-    private int touchActionDownY;
+    private int mTouchActionDownY;
     private VelocityTracker mVelocityTracker;
     private int mSlop;
     private Paint mTextPaint;
@@ -52,11 +54,91 @@ public class TimePicker extends View {
     private int mGravity = 0;
     private boolean isDrag;
     private boolean isRotationAnimating;
-    private Paint mCircleStrokePaint;
+    private Paint mHighlightPaint;
     private int mAngleBetweenNumbers;
 
-    public TimePicker(Context context) {
+    public static class TimePickerBuilder {
+        private final Context mContext;
+        private int mCircleRadius;
+        private int mTextColor;
+        private int mHighLightColor;
+        private int mCircleColor;
+        private int mTextSize;
+        private int mSelectedNumber;
+        private int mGravity;
+        private int mNumbersCount;
+
+        public TimePickerBuilder(Context context) {
+            this.mContext = context;
+        }
+
+        public TimePickerBuilder setCircleRadius(int circleRadius) {
+            this.mCircleRadius = circleRadius;
+            return this;
+        }
+
+        protected TimePickerBuilder setTextColor(@ColorInt int color) {
+            mTextColor = color;
+            return this;
+        }
+
+        protected TimePickerBuilder setTextColorRes(@ColorRes int color) {
+            mTextColor = ContextCompat.getColor(mContext, color);
+            return this;
+        }
+
+        public TimePickerBuilder setHighlightColor(@ColorInt int color) {
+            mHighLightColor = color;
+            return this;
+        }
+
+        public TimePickerBuilder setHighlightColorRes(@ColorRes int color) {
+            mHighLightColor = ContextCompat.getColor(mContext, color);
+            return this;
+        }
+
+        public TimePickerBuilder setCircleColor(@ColorInt int color) {
+            mCircleColor = color;
+            return this;
+        }
+
+        public TimePickerBuilder setCircleColorRes(@ColorRes int color) {
+            mCircleColor = ContextCompat.getColor(mContext, color);
+            return this;
+        }
+
+        public TimePickerBuilder setTextSize(int size) {
+            mTextSize = size;
+            return this;
+        }
+
+        public TimePickerBuilder setSelectedNumber(int number) {
+            mSelectedNumber = number;
+            return this;
+        }
+
+        public TimePickerBuilder setGravity(int gravity) {
+            this.mGravity = gravity;
+            return this;
+        }
+
+        public TimePickerBuilder setNumbersCount(int count) {
+            mNumbersCount = count;
+            return this;
+        }
+
+        public TimePicker build() {
+            return new TimePicker(mContext, mNumbersCount, mTextColor, mHighLightColor, mCircleColor, mSelectedNumber, mTextSize, mGravity, mCircleRadius);
+        }
+    }
+
+    private TimePicker(Context context, int numbersCount, int textColor, int highlightColor, int circleColor, int selectedNumber, int textSize, int gravity, int circleRadius) {
         this(context, null);
+        mRotateAngle = selectedNumber * mAngleBetweenNumbers;
+        mGravity = gravity;
+        mNumbersCount = numbersCount;
+        mCircleRadius = circleRadius;
+        initPaints(circleColor, textColor, highlightColor, textSize);
     }
 
     public TimePicker(Context context, AttributeSet attrs) {
@@ -70,100 +152,152 @@ public class TimePicker extends View {
 
     private void init(AttributeSet attrs) {
         int circleColor = Color.WHITE;
-        int textColor = Color.BLACK;
-        int strokeColor = Color.BLACK;
+        int textColor = Color.WHITE;
+        int highlightColor = Color.RED;
+        int textSize = DimenUtils.convertDpToPixel(getContext(), TEXT_SIZE_DP);
 
-        TypedArray a = mContext.getTheme().obtainStyledAttributes(
-                attrs,
-                R.styleable.TimePicker,
-                0, 0);
-
-        mCircleRadius = DimenUtils.convertDpToPixel(mContext, CIRCLE_RADIUS_DP);
         mCirclePaint = new Paint();
-        mCircleStrokePaint = new Paint();
-        mCircleStrokePaint.setColor(ContextCompat.getColor(mContext, R.color.hoursSelectedColor));
-        //TODO extract 3 when design is ready
-        mCircleStrokePaint.setTextSize(DimenUtils.convertDpToPixel(getContext(), TEXT_SIZE_DP + 3));
+        mHighlightPaint = new Paint();
         mTextPaint = new Paint();
-        mTextPaint.setTextSize(DimenUtils.convertDpToPixel(getContext(), TEXT_SIZE_DP));
-        mTextPaint.setAntiAlias(true);
 
+        if (attrs != null) {
+            TypedArray a = mContext.getTheme().obtainStyledAttributes(
+                    attrs,
+                    R.styleable.TimePicker,
+                    0, 0);
 
-        try {
-            mNumbersCount = a.getInteger(R.styleable.TimePicker_numbersCount, 12);
-            circleColor = a.getColor(R.styleable.TimePicker_clockColor, Color.WHITE);
-            textColor = a.getColor(R.styleable.TimePicker_textColor, Color.BLACK);
-            strokeColor = a.getColor(R.styleable.TimePicker_strokeColor, Color.BLACK);
-            mGravity = a.getInteger(R.styleable.TimePicker_gravity, 0);
-        } finally {
-            a.recycle();
+            try {
+                mNumbersCount = a.getInteger(R.styleable.TimePicker_numbersCount, mNumbersCount);
+                circleColor = a.getColor(R.styleable.TimePicker_clockColor, circleColor);
+                textColor = a.getColor(R.styleable.TimePicker_textColor, textColor);
+                highlightColor = a.getColor(R.styleable.TimePicker_highlightColor, highlightColor);
+                textSize = a.getDimensionPixelSize(R.styleable.TimePicker_textSize, textSize);
+                mGravity = a.getInteger(R.styleable.TimePicker_gravity, mGravity);
+            } finally {
+                a.recycle();
+            }
+            initPaints(circleColor, textColor, highlightColor, textSize);
+            mCircleRadius = DimenUtils.convertDpToPixel(mContext, CIRCLE_RADIUS_DP);
         }
+
+        mAngleBetweenNumbers = MAX_ANGLE / mNumbersCount;
+        mSlop = getTouchSlop();
+    }
+
+    private int getTouchSlop() {
+        ViewConfiguration configuration = ViewConfiguration.get(getContext());
+        return configuration.getScaledTouchSlop();
+    }
+
+    private void initPaints(int circleColor, int textColor, int highlightColor, int textSize) {
+        //TODO extract 3 when design is ready
+        mHighlightPaint.setTextSize(DimenUtils.convertDpToPixel(getContext(), TEXT_SIZE_DP + 3));
+        mTextPaint.setAntiAlias(true);
         mCirclePaint.setColor(circleColor);
         mTextPaint.setColor(textColor);
-        mCircleStrokePaint.setColor(strokeColor);
-        mAngleBetweenNumbers = MAX_ANGLE / mNumbersCount;
+        mHighlightPaint.setColor(highlightColor);
+        mTextPaint.setTextSize(textSize);
+    }
 
-        ViewConfiguration configuration = ViewConfiguration.get(getContext());
-        mSlop = configuration.getScaledTouchSlop();
+    private void setSelectedNumber(float number) {
+        mRotateAngle = number * mAngleBetweenNumbers;
+        invalidate();
+    }
+
+    private float getSelectedNumber() {
+        float selectedNumber = (float) Math.floor(mRotateAngle) / (MAX_ANGLE / mNumbersCount);
+        if (selectedNumber <= 0) {
+            selectedNumber = mNumbersCount + selectedNumber;
+        }
+        return selectedNumber;
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         //checking the gravity and mirroring the time picker
+        //checking the shit out of it
         if (mGravity == 0) {
-            mCirclePositionX = -mCircleRadius / 2;
+            mCirclePositionX = -mCircleRadius / 4;
         } else {
-            mCirclePositionX = getMeasuredWidth() + mCircleRadius / 2;
+            mCirclePositionX = getMeasuredWidth() + mCircleRadius / 4;
         }
         mCirclePositionY = getMeasuredHeight() / 2;
+    }
+
+    public int getNumbersCount() {
+        return mNumbersCount;
+    }
+
+    public void setNumbersCount(int numbersCount) {
+        mNumbersCount = numbersCount;
+        invalidate();
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         canvas.save();
-        drawWatchFace(canvas, mCirclePositionX, mCirclePositionY);
+        drawWatchFace(canvas);
         canvas.restore();
     }
 
-    private void drawWatchFace(final Canvas canvas, float circleX, float circleY) {
+    private void drawWatchFace(final Canvas canvas) {
+
+        float selectedNumber = getSelectedNumber();
         // we should rotate in a different direction when view has right gravity,
         // to ensure all two pickers rotating in the same direction
         if (mGravity == 0) {
-            canvas.rotate(mRotateAngle, circleX, circleY);
+            canvas.rotate(mRotateAngle, mCirclePositionX, mCirclePositionY);
         } else {
-            canvas.rotate(-mRotateAngle, circleX, circleY);
+            canvas.rotate(-mRotateAngle, mCirclePositionX, mCirclePositionY);
         }
 
         //TODO extract 5 when design is ready
-        canvas.drawCircle(circleX, circleY, mCircleRadius + 5, mCircleStrokePaint);
-        canvas.drawCircle(circleX, circleY, mCircleRadius, mCirclePaint);
+        canvas.drawCircle(mCirclePositionX, mCirclePositionY, mCircleRadius + 5, mHighlightPaint);
 
-        drawNumbersOnWatchFace(canvas, circleX, circleY);
+        canvas.drawCircle(mCirclePositionX, mCirclePositionY, mCircleRadius, mCirclePaint);
+
+
+        drawNumbersOnWatchFace(canvas, Math.round(selectedNumber));
     }
 
-    private void drawNumbersOnWatchFace(Canvas canvas, float circleX, float circleY) {
+    private void drawNumbersOnWatchFace(Canvas canvas, int selectedNumber) {
         for (int i = 1; i <= mNumbersCount; i++) {
             final String text = String.valueOf(i);
-            drawNumber(canvas, circleX, circleY, text, getTextX(circleX, text));
+            rotateCircleOneNotch(canvas);
+            drawNumber(canvas, text, selectedNumber);
         }
     }
 
-    private float getTextX(float circleX, String text) {
+    private float getTextX(String text) {
         final Rect textBounds = new Rect();
         mTextPaint.getTextBounds(text, 0, text.length(), textBounds);
         if (mGravity == 0) {
-            return circleX + (mCircleRadius) - textBounds.right - DimenUtils.convertDpToPixel(mContext, TEXT_OFFSETX_DP);
+            return mCirclePositionX + (mCircleRadius) - textBounds.right - DimenUtils.convertDpToPixel(mContext, TEXT_OFFSETX_DP);
         } else {
-            return circleX - mCircleRadius + textBounds.left + DimenUtils.convertDpToPixel(mContext, TEXT_OFFSETX_DP);
+            return mCirclePositionX - mCircleRadius + textBounds.left + DimenUtils.convertDpToPixel(mContext, TEXT_OFFSETX_DP);
         }
     }
 
-    private void drawNumber(Canvas canvas, float circleX, float circleY, String text, float textX) {
-        canvas.rotate(MAX_ANGLE / mNumbersCount, circleX, circleY);
-        canvas.drawText(text, textX, circleY, mTextPaint);
+    private void drawNumber(Canvas canvas, String text, int selectedNumber) {
+        float textX = getTextX(text);
+        if (Integer.valueOf(text) == selectedNumber) {
+            canvas.drawText(text, textX, mCirclePositionY, mHighlightPaint);
+        } else {
+            canvas.drawText(text, textX, mCirclePositionY, mTextPaint);
+        }
     }
+
+    private void rotateCircleOneNotch(Canvas canvas) {
+        if (mGravity == 0) {
+            canvas.rotate(-MAX_ANGLE / mNumbersCount, mCirclePositionX, mCirclePositionY);
+
+        } else {
+            canvas.rotate(MAX_ANGLE / mNumbersCount, mCirclePositionX, mCirclePositionY);
+        }
+    }
+
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -175,7 +309,7 @@ public class TimePicker extends View {
                 return true;
             }
             case MotionEvent.ACTION_UP: {
-                if (!MathUtils.isAngleAtNumber(mRotateAngle, mNumbersCount, MAX_ANGLE)) {
+                if (!MathUtils.isAngleAtNumber(mRotateAngle, mAngleBetweenNumbers)) {
                     rotateAnimation();
                 }
                 return true;
@@ -199,12 +333,12 @@ public class TimePicker extends View {
                 }
             }
         }, ANIMATIONS_CLEAR_DELAY);
-        touchActionDownY = (int) event.getY();
+        mTouchActionDownY = (int) event.getY();
         mVelocityTracker = VelocityUtils.resetVelocityTracker(event, mVelocityTracker);
     }
 
     private void handleSwipe(MotionEvent event, int pointerId) {
-        final float deltaX = event.getRawX() - touchActionDownY;
+        final float deltaX = event.getRawX() - mTouchActionDownY;
         final float previousVelocity = mYVelocity;
         mYVelocity = VelocityUtils.computeVelocity(event, pointerId, mVelocityTracker);
         if ((previousVelocity * mYVelocity) < 0) {
