@@ -16,8 +16,11 @@ public class ClockFace extends LinearLayout {
     private final static int CIRCLE_RADIUS_DP = 200;
     private final static int TEXT_SIZE_DP = 16;
     private final static int DEFAULT_HOURS_COUNT = 24;
+    private final static int SECONDS_IN_MINUTE = 60;
+    private final static int MILLIS_IN_SECOND = 100;
     private final int DEFAULT_MINUTES_COUNT = 60;
     private TimePicker mHoursPicker;
+    private TimePicker mMinutePicker;
 
     public ClockFace(Context context) {
         this(context, null);
@@ -38,7 +41,6 @@ public class ClockFace extends LinearLayout {
         int textSize = DimenUtils.convertSpToPixel(context, TEXT_SIZE_DP);
         int hoursCount = DEFAULT_HOURS_COUNT;
         int circleRadius = DimenUtils.convertDpToPixel(context, CIRCLE_RADIUS_DP);
-
 
         TypedArray a = context.getTheme().obtainStyledAttributes(
                 attrs,
@@ -68,7 +70,7 @@ public class ClockFace extends LinearLayout {
                 .setNumbersCount(hoursCount)
                 .build();
 
-        TimePicker minutePicker = new TimePicker.TimePickerBuilder(getContext())
+        mMinutePicker = new TimePicker.TimePickerBuilder(getContext())
                 .setCircleRadius(circleRadius)
                 .setTextSize(textSize)
                 .setHighlightColor(minutesSelectedTextColor)
@@ -80,7 +82,7 @@ public class ClockFace extends LinearLayout {
 
 
         addPickerToLayout(mHoursPicker);
-        addPickerToLayout(minutePicker);
+        addPickerToLayout(mMinutePicker);
     }
 
     private void addPickerToLayout(TimePicker hoursPicker) {
@@ -90,5 +92,9 @@ public class ClockFace extends LinearLayout {
 
     public void setHoursCount(int hours) {
         mHoursPicker.setNumbersCount(hours);
+    }
+
+    public long getTimeInMillis() {
+        return (long) (((mHoursPicker.getSelectedNumber() * SECONDS_IN_MINUTE) + mMinutePicker.getSelectedNumber()) * MILLIS_IN_SECOND);
     }
 }
