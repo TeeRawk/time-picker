@@ -16,9 +16,9 @@ public class ClockFace extends LinearLayout {
     private final static int CIRCLE_RADIUS_DP = 200;
     private final static int TEXT_SIZE_DP = 16;
     private final static int DEFAULT_HOURS_COUNT = 24;
-    private final static int SECONDS_IN_MINUTE = 60;
     private final static int MILLIS_IN_SECOND = 100;
     private final int DEFAULT_MINUTES_COUNT = 60;
+    private final int SECONDS_IN_MINUTE = 60;
     private TimePicker mHoursPicker;
     private TimePicker mMinutePicker;
 
@@ -95,6 +95,6 @@ public class ClockFace extends LinearLayout {
     }
 
     public long getTimeInMillis() {
-        return (long) (((mHoursPicker.getSelectedNumber() * SECONDS_IN_MINUTE) + mMinutePicker.getSelectedNumber()) * MILLIS_IN_SECOND);
+        return (long) ((((mHoursPicker.getSelectedNumber() * DEFAULT_MINUTES_COUNT) + mMinutePicker.getSelectedNumber())))* SECONDS_IN_MINUTE *MILLIS_IN_SECOND;
     }
 }
