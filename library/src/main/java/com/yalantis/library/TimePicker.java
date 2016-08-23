@@ -189,7 +189,7 @@ public class TimePicker extends View {
                     0, 0);
 
             try {
-                mNumbersCount = a.getInteger(R.styleable.TimePicker_numbersCount, mNumbersCount);
+                mNumbersCount = a.getInteger(R.styleable.TimePicker_divisionCount, mNumbersCount);
                 circleColor = a.getColor(R.styleable.TimePicker_clockColor, circleColor);
                 textColor = a.getColor(R.styleable.TimePicker_textColor, textColor);
                 highlightColor = a.getColor(R.styleable.TimePicker_highlightColor, highlightColor);
