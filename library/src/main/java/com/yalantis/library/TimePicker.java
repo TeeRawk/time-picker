@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
+import android.support.annotation.IntDef;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -53,11 +54,27 @@ public class TimePicker extends View {
     private Paint mTextPaint;
     private int mNumbersCount = 12;
     private float mYVelocity;
-    private int mGravity = 0;
     private boolean isDrag;
     private boolean isRotationAnimating;
     private Paint mHighlightPaint;
     private int mAngleBetweenNumbers;
+
+    @IntDef({TWELVE_HOURS, TWENTY_FOUR_HOURS, SIXTY_MINUTES})
+    public @interface DivisionNumber {
+    }
+
+    public static final int TWELVE_HOURS = 12;
+    public static final int TWENTY_FOUR_HOURS = 24;
+    public static final int SIXTY_MINUTES = 60;
+
+    @IntDef({GRAVITY_LEFT, GRAVITY_RIGHT})
+    public @interface Gravity {
+    }
+
+    public static final int GRAVITY_LEFT = 1;
+    public static final int GRAVITY_RIGHT = -1;
+
+    private int mGravity = GRAVITY_LEFT;
 
     public static class TimePickerBuilder {
         private final Context mContext;
@@ -67,8 +84,10 @@ public class TimePicker extends View {
         private int mCircleColor;
         private int mTextSize;
         private int mSelectedNumber;
-        private int mGravity;
-        private int mNumbersCount;
+        @Gravity
+        private int mGravity = GRAVITY_LEFT;
+        @DivisionNumber
+        private int mNumbersCount = TWELVE_HOURS;
 
         public TimePickerBuilder(Context context) {
             this.mContext = context;
@@ -119,12 +138,12 @@ public class TimePicker extends View {
             return this;
         }
 
-        public TimePickerBuilder setGravity(int gravity) {
+        public TimePickerBuilder setGravity(@Gravity int gravity) {
             this.mGravity = gravity;
             return this;
         }
 
-        public TimePickerBuilder setNumbersCount(int count) {
+        public TimePickerBuilder setNumbersCount(@DivisionNumber int count) {
             mNumbersCount = count;
             return this;
         }
@@ -219,7 +238,7 @@ public class TimePicker extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         //checking the gravity and mirroring the time picker
-        if (mGravity == 0) {
+        if (mGravity == GRAVITY_LEFT) {
             mCirclePositionX = -mCircleRadius / 3;
         } else {
             mCirclePositionX = getMeasuredWidth() + mCircleRadius / 3;
@@ -248,7 +267,7 @@ public class TimePicker extends View {
         float selectedNumber = getSelectedNumber();
         // we should rotate in a different direction when view has right gravity,
         // to ensure all two pickers rotating in the same direction
-        if (mGravity == 0) {
+        if (mGravity == GRAVITY_LEFT) {
             canvas.rotate(mRotateAngle, mCirclePositionX, mCirclePositionY);
         } else {
             canvas.rotate(-mRotateAngle, mCirclePositionX, mCirclePositionY);
@@ -270,7 +289,7 @@ public class TimePicker extends View {
     private float getTextX(String text) {
         final Rect textBounds = new Rect();
         mTextPaint.getTextBounds(text, 0, text.length(), textBounds);
-        if (mGravity == 0) {
+        if (mGravity == GRAVITY_LEFT) {
             return mCirclePositionX + (mCircleRadius) - textBounds.right - DimenUtils.convertDpToPixel(mContext, TEXT_OFFSETX_DP);
         } else {
             return mCirclePositionX - mCircleRadius + textBounds.left + DimenUtils.convertDpToPixel(mContext, TEXT_OFFSETX_DP);
@@ -288,12 +307,6 @@ public class TimePicker extends View {
         }
     }
 
-
-    /**
-     * @param number
-     * @return returns a string that contains number in a canonize form, like 01,02,03.
-     * The last and the first number on the clock is 00.
-     */
     private String canonizeNumber(Integer number) {
         String text = String.valueOf(number);
         if (number < 10) {
@@ -305,7 +318,7 @@ public class TimePicker extends View {
     }
 
     private void rotateCircleOneNotch(Canvas canvas) {
-        if (mGravity == 0) {
+        if (mGravity == GRAVITY_LEFT) {
             canvas.rotate(MAX_ANGLE / mNumbersCount, mCirclePositionX, mCirclePositionY);
 
         } else {

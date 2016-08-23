@@ -41,6 +41,7 @@ public class ClockFace extends LinearLayout {
         int textSize = DimenUtils.convertSpToPixel(context, TEXT_SIZE_DP);
         int hoursCount = DEFAULT_HOURS_COUNT;
         int circleRadius = DimenUtils.convertDpToPixel(context, CIRCLE_RADIUS_DP);
+        @TimePicker.DivisionNumber int divisionNumber = TimePicker.TWELVE_HOURS;
 
         TypedArray a = context.getTheme().obtainStyledAttributes(
                 attrs,
@@ -61,13 +62,18 @@ public class ClockFace extends LinearLayout {
             a.recycle();
         }
 
+        if (hoursCount == TimePicker.TWENTY_FOUR_HOURS) {
+            divisionNumber = TimePicker.TWENTY_FOUR_HOURS;
+        }
+
+
         mHoursPicker = new TimePicker.TimePickerBuilder(getContext())
                 .setCircleRadius(circleRadius)
                 .setTextColor(hoursTextColor)
                 .setCircleColor(hoursClockColor)
                 .setHighlightColor(hoursSelectedTextColor)
                 .setTextSize(textSize)
-                .setNumbersCount(hoursCount)
+                .setNumbersCount(divisionNumber)
                 .build();
 
         mMinutePicker = new TimePicker.TimePickerBuilder(getContext())
@@ -76,8 +82,8 @@ public class ClockFace extends LinearLayout {
                 .setHighlightColor(minutesSelectedTextColor)
                 .setTextColor(minutesTextColor)
                 .setCircleColor(minutesClockColor)
-                .setGravity(-1)
-                .setNumbersCount(DEFAULT_MINUTES_COUNT)
+                .setGravity(TimePicker.GRAVITY_RIGHT)
+                .setNumbersCount(TimePicker.SIXTY_MINUTES)
                 .build();
 
 
