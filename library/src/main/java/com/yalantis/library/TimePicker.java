@@ -38,7 +38,9 @@ public class TimePicker extends View {
     private final int ROTATION_STEP = 20;
     private final static int ANIMATIONS_CLEAR_DELAY = 30;
     private final static float SLOW_ROTATION_STEP = 2f;
-    private final static double INTERPOLATED_TIME_LIMIT = 0.8;
+    private final static double INTERPOLATED_TIME_LIMIT = 0.7;
+    private final static int STROKE_WIDTH = 7;
+    private final static int TEXT_SELECTION_SIZE_DIFF = 5;
 
     private int mCirclePositionY;
     private Paint mCirclePaint;
@@ -138,6 +140,7 @@ public class TimePicker extends View {
         mGravity = gravity;
         mNumbersCount = numbersCount;
         mCircleRadius = circleRadius;
+        mAngleBetweenNumbers = MAX_ANGLE / mNumbersCount;
         initPaints(circleColor, textColor, highlightColor, textSize);
     }
 
@@ -155,7 +158,7 @@ public class TimePicker extends View {
         int textColor = Color.WHITE;
         int highlightColor = Color.RED;
         int textSize = DimenUtils.convertDpToPixel(getContext(), TEXT_SIZE_DP);
-
+        setLayerType(LAYER_TYPE_HARDWARE, null);
         mCirclePaint = new Paint();
         mHighlightPaint = new Paint();
         mTextPaint = new Paint();
@@ -178,9 +181,9 @@ public class TimePicker extends View {
             }
             initPaints(circleColor, textColor, highlightColor, textSize);
             mCircleRadius = DimenUtils.convertDpToPixel(mContext, CIRCLE_RADIUS_DP);
+            mAngleBetweenNumbers = MAX_ANGLE / mNumbersCount;
         }
 
-        mAngleBetweenNumbers = MAX_ANGLE / mNumbersCount;
         mSlop = getTouchSlop();
     }
 
@@ -190,8 +193,7 @@ public class TimePicker extends View {
     }
 
     private void initPaints(int circleColor, int textColor, int highlightColor, int textSize) {
-        //TODO extract 3 when design is ready
-        mHighlightPaint.setTextSize(DimenUtils.convertDpToPixel(getContext(), TEXT_SIZE_DP + 3));
+        mHighlightPaint.setTextSize(DimenUtils.convertSpToPixel(getContext(), TEXT_SIZE_DP + TEXT_SELECTION_SIZE_DIFF));
         mTextPaint.setAntiAlias(true);
         mCirclePaint.setColor(circleColor);
         mTextPaint.setColor(textColor);
@@ -204,11 +206,12 @@ public class TimePicker extends View {
         invalidate();
     }
 
-    private float getSelectedNumber() {
-        float selectedNumber = (float) Math.floor(mRotateAngle) / (MAX_ANGLE / mNumbersCount);
-        if (selectedNumber <= 0) {
+    public float getSelectedNumber() {
+        float selectedNumber = (float) Math.round(-mRotateAngle) / (MAX_ANGLE / mNumbersCount);
+        if (selectedNumber < 0) {
             selectedNumber = mNumbersCount + selectedNumber;
         }
+
         return selectedNumber;
     }
 
@@ -216,11 +219,10 @@ public class TimePicker extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         //checking the gravity and mirroring the time picker
-        //checking the shit out of it
         if (mGravity == 0) {
-            mCirclePositionX = -mCircleRadius / 4;
+            mCirclePositionX = -mCircleRadius / 3;
         } else {
-            mCirclePositionX = getMeasuredWidth() + mCircleRadius / 4;
+            mCirclePositionX = getMeasuredWidth() + mCircleRadius / 3;
         }
         mCirclePositionY = getMeasuredHeight() / 2;
     }
@@ -243,7 +245,6 @@ public class TimePicker extends View {
     }
 
     private void drawWatchFace(final Canvas canvas) {
-
         float selectedNumber = getSelectedNumber();
         // we should rotate in a different direction when view has right gravity,
         // to ensure all two pickers rotating in the same direction
@@ -252,12 +253,8 @@ public class TimePicker extends View {
         } else {
             canvas.rotate(-mRotateAngle, mCirclePositionX, mCirclePositionY);
         }
-
-        //TODO extract 5 when design is ready
-        canvas.drawCircle(mCirclePositionX, mCirclePositionY, mCircleRadius + 5, mHighlightPaint);
-
+        canvas.drawCircle(mCirclePositionX, mCirclePositionY, mCircleRadius + STROKE_WIDTH, mHighlightPaint);
         canvas.drawCircle(mCirclePositionX, mCirclePositionY, mCircleRadius, mCirclePaint);
-
 
         drawNumbersOnWatchFace(canvas, Math.round(selectedNumber));
     }
@@ -281,20 +278,38 @@ public class TimePicker extends View {
     }
 
     private void drawNumber(Canvas canvas, String text, int selectedNumber) {
+        int number = Integer.valueOf(text) == mNumbersCount ? 0 : Integer.valueOf(text);
+        text = canonizeNumber(number);
         float textX = getTextX(text);
-        if (Integer.valueOf(text) == selectedNumber) {
+        if (number == selectedNumber) {
             canvas.drawText(text, textX, mCirclePositionY, mHighlightPaint);
         } else {
             canvas.drawText(text, textX, mCirclePositionY, mTextPaint);
         }
     }
 
+
+    /**
+     * @param number
+     * @return returns a string that contains number in a canonize form, like 01,02,03.
+     * The last and the first number on the clock is 00.
+     */
+    private String canonizeNumber(Integer number) {
+        String text = String.valueOf(number);
+        if (number < 10) {
+            text = "0" + text;
+        } else if (number == mNumbersCount) {
+            text = "00";
+        }
+        return text;
+    }
+
     private void rotateCircleOneNotch(Canvas canvas) {
         if (mGravity == 0) {
-            canvas.rotate(-MAX_ANGLE / mNumbersCount, mCirclePositionX, mCirclePositionY);
+            canvas.rotate(MAX_ANGLE / mNumbersCount, mCirclePositionX, mCirclePositionY);
 
         } else {
-            canvas.rotate(MAX_ANGLE / mNumbersCount, mCirclePositionX, mCirclePositionY);
+            canvas.rotate(-MAX_ANGLE / mNumbersCount, mCirclePositionX, mCirclePositionY);
         }
     }
 
@@ -428,8 +443,10 @@ public class TimePicker extends View {
     }
 
     private void getCanonicalAngle() {
-        if (mRotateAngle >= MAX_ANGLE || mRotateAngle <= -MAX_ANGLE) {
+        if (mRotateAngle <= -MAX_ANGLE) {
             mRotateAngle = MAX_ANGLE - Math.abs(mRotateAngle);
+        } else if (mRotateAngle >= MAX_ANGLE) {
+            mRotateAngle = mRotateAngle - MAX_ANGLE;
         }
     }
 
