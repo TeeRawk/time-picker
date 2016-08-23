@@ -158,7 +158,7 @@ public class TimePicker extends View {
         int textColor = Color.WHITE;
         int highlightColor = Color.RED;
         int textSize = DimenUtils.convertDpToPixel(getContext(), TEXT_SIZE_DP);
-
+        setLayerType(LAYER_TYPE_HARDWARE, null);
         mCirclePaint = new Paint();
         mHighlightPaint = new Paint();
         mTextPaint = new Paint();
@@ -208,9 +208,10 @@ public class TimePicker extends View {
 
     public float getSelectedNumber() {
         float selectedNumber = (float) Math.round(-mRotateAngle) / (MAX_ANGLE / mNumbersCount);
-        if (selectedNumber <= 0) {
+        if (selectedNumber < 0) {
             selectedNumber = mNumbersCount + selectedNumber;
         }
+
         return selectedNumber;
     }
 
@@ -220,9 +221,9 @@ public class TimePicker extends View {
         //checking the gravity and mirroring the time picker
         //checking the shit out of it
         if (mGravity == 0) {
-            mCirclePositionX = -mCircleRadius / 4;
+            mCirclePositionX = -mCircleRadius / 3;
         } else {
-            mCirclePositionX = getMeasuredWidth() + mCircleRadius / 4;
+            mCirclePositionX = getMeasuredWidth() + mCircleRadius / 3;
         }
         mCirclePositionY = getMeasuredHeight() / 2;
     }
@@ -278,7 +279,7 @@ public class TimePicker extends View {
     }
 
     private void drawNumber(Canvas canvas, String text, int selectedNumber) {
-        Integer number = Integer.valueOf(text);
+        int number = Integer.valueOf(text) == mNumbersCount ? 0 : Integer.valueOf(text);
         text = canonizeNumber(number);
         float textX = getTextX(text);
         if (number == selectedNumber) {
@@ -294,7 +295,7 @@ public class TimePicker extends View {
      * @return returns a string that contains number in a canonize form, like 01,02,03.
      * The last and the first number on the clock is 00.
      */
-    private String canonizeNumber( Integer number) {
+    private String canonizeNumber(Integer number) {
         String text = String.valueOf(number);
         if (number < 10) {
             text = "0" + text;
