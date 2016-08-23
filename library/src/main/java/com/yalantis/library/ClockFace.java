@@ -95,14 +95,14 @@ public class ClockFace extends LinearLayout {
     }
 
     public long getTimeInMillis() {
-        return (long) ((((mHoursPicker.getSelectedNumber() * DEFAULT_MINUTES_COUNT) + mMinutePicker.getSelectedNumber())))* SECONDS_IN_MINUTE *MILLIS_IN_SECOND;
+        return (long) ((((mHoursPicker.getSelectedNumber() * DEFAULT_MINUTES_COUNT) + mMinutePicker.getSelectedNumber()))) * SECONDS_IN_MINUTE * MILLIS_IN_SECOND;
     }
 
-    public float getHours(){
+    public float getHours() {
         return mHoursPicker.getSelectedNumber();
     }
 
-    public float getMinutes(){
+    public float getMinutes() {
         return mMinutePicker.getSelectedNumber();
     }
 }

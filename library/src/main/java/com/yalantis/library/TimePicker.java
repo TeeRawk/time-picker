@@ -219,7 +219,6 @@ public class TimePicker extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         //checking the gravity and mirroring the time picker
-        //checking the shit out of it
         if (mGravity == 0) {
             mCirclePositionX = -mCircleRadius / 3;
         } else {
