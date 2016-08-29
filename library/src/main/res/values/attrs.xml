@@ -23,7 +23,6 @@
         <attr name="hoursCount" format="enum">
             <enum name="twenty_four" value="24"/>
             <enum name="twelve" value="12"/>
-            <enum name="sixty" value="60"/>
         </attr>
         <attr name="circleRadius" format="integer"/>
         <attr name="numbersSize" format="dimension"/>
