@@ -225,13 +225,13 @@ public class TimePicker extends View {
         invalidate();
     }
 
-    public float getSelectedNumber() {
+    public int getSelectedNumber() {
         float selectedNumber = (float) Math.round(-mRotateAngle) / (MAX_ANGLE / mNumbersCount);
         if (selectedNumber < 0) {
             selectedNumber = mNumbersCount + selectedNumber;
         }
 
-        return selectedNumber;
+        return Math.round(selectedNumber);
     }
 
     @Override
