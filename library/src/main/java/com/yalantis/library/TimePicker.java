@@ -34,14 +34,16 @@ public class TimePicker extends View {
     public final static int MAX_ANGLE = 360;
     private final static int TEXT_OFFSETX_DP = 12;
     private final static int TEXT_SIZE_DP = 16;
-    private final static int SLOW_DOWN_ANIMATION_DURATION = 300;
-    private final static int ROTATION_ANIMATION_DURATION = 2000;
-    private final int ROTATION_STEP = 20;
+    private final static int SLOW_DOWN_ANIMATION_DURATION = 500;
+    private final static int ROTATION_ANIMATION_DURATION = 1800;
+    private final static int ROTATION_STEP = 20;
     private final static int ANIMATIONS_CLEAR_DELAY = 30;
     private final static float SLOW_ROTATION_STEP = 2f;
-    private final static double INTERPOLATED_TIME_LIMIT = 0.7;
+    private final static double ROTATION_INTERPOLATION_LIMIT = 0.8;
     private final static int STROKE_WIDTH = 7;
     private final static int TEXT_SELECTION_SIZE_DIFF = 5;
+    private final static int SLOW_DOWN_ROTATION_DURATION = 1500;
+    private final double SLOW_DOWN_INTERPOLATION_LIMIT = 0.7;
 
     private int mCirclePositionY;
     private Paint mCirclePaint;
@@ -386,7 +388,7 @@ public class TimePicker extends View {
     private void rotateToClosestNumber() {
         final float distanceToClosestNumber = MathUtils.getDistanceToClosestNumber(mYVelocity, mRotateAngle, mAngleBetweenNumbers);
         final float tmpAngle = mRotateAngle;
-        startSlowdownAnimation(new Animation() {
+        startRotateToClosestAnimation(new Animation() {
             @Override
             protected void applyTransformation(float interpolatedTime, Transformation t) {
                 mRotateAngle = tmpAngle - (distanceToClosestNumber * interpolatedTime);
@@ -395,7 +397,7 @@ public class TimePicker extends View {
         });
     }
 
-    private void startSlowdownAnimation(Animation animation) {
+    private void startRotateToClosestAnimation(Animation animation) {
         animation.setInterpolator(new LinearInterpolator());
         animation.setDuration(SLOW_DOWN_ANIMATION_DURATION);
         startAnimation(animation);
@@ -407,23 +409,39 @@ public class TimePicker extends View {
         invalidate();
     }
 
-    private void rotateAnimation() {
+    private void startSlowDownAnimation() {
         final float tmpAngle = mRotateAngle;
         startRotation(new Animation() {
             @Override
             protected void applyTransformation(float interpolatedTime, Transformation t) {
-                if (interpolatedTime < INTERPOLATED_TIME_LIMIT) {
-                    mRotateAngle = tmpAngle + mYVelocity * ROTATION_STEP * interpolatedTime;
+                if (interpolatedTime < SLOW_DOWN_INTERPOLATION_LIMIT) {
+                    mRotateAngle = tmpAngle + (2 * mAngleBetweenNumbers) * (mYVelocity / Math.abs(mYVelocity)) * interpolatedTime;
                 } else {
                     rotateToClosestNumber();
                 }
                 getCanonicalAngle();
                 invalidate();
             }
-        });
+        }, SLOW_DOWN_ROTATION_DURATION);
     }
 
-    private void startRotation(Animation rotation) {
+    private void rotateAnimation() {
+        final float tmpAngle = mRotateAngle;
+        startRotation(new Animation() {
+            @Override
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+                if (interpolatedTime < ROTATION_INTERPOLATION_LIMIT) {
+                    mRotateAngle = tmpAngle + mYVelocity * ROTATION_STEP * interpolatedTime;
+                } else {
+                    startSlowDownAnimation();
+                }
+                getCanonicalAngle();
+                invalidate();
+            }
+        },ROTATION_ANIMATION_DURATION);
+    }
+
+    private void startRotation(Animation rotation,int duration) {
         rotation.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
@@ -441,7 +459,7 @@ public class TimePicker extends View {
             }
         });
         rotation.setInterpolator(new DecelerateInterpolator());
-        rotation.setDuration(ROTATION_ANIMATION_DURATION);
+        rotation.setDuration(duration);
         if (VelocityUtils.isLowVelocity(mYVelocity)) {
             startAnimation(rotation);
         } else {
