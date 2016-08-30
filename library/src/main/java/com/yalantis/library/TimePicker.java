@@ -228,12 +228,12 @@ public class TimePicker extends View {
     }
 
     public int getSelectedNumber() {
-        float selectedNumber = (float) Math.round(-mRotateAngle) / (MAX_ANGLE / mNumbersCount);
+        int selectedNumber = Math.round((float) Math.round(-mRotateAngle) / (MAX_ANGLE / mNumbersCount));
         if (selectedNumber < 0) {
             selectedNumber = mNumbersCount + selectedNumber;
         }
 
-        return Math.round(selectedNumber);
+        return selectedNumber;
     }
 
     @Override
@@ -438,10 +438,10 @@ public class TimePicker extends View {
                 getCanonicalAngle();
                 invalidate();
             }
-        },ROTATION_ANIMATION_DURATION);
+        }, ROTATION_ANIMATION_DURATION);
     }
 
-    private void startRotation(Animation rotation,int duration) {
+    private void startRotation(Animation rotation, int duration) {
         rotation.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
