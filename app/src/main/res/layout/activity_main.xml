@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:hoursClockColor="@color/clockBG"
-        app:hoursCount="24"
+        app:hoursCount="twenty_four"
         app:hoursHighlightColor="@color/hoursSelectedColor"
         app:hoursTextColor="@color/textColor"
         app:minutesClockColor="@color/clockBG"

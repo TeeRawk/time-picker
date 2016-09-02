@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="TimePicker">
-        <attr name="numbersCount" format="integer"/>D
+        <attr name="divisionCount" format="enum">
+            <enum name="twenty_four" value="24"/>
+            <enum name="twelve" value="12"/>
+            <enum name="sixty" value="60"/>
+        </attr>
         <attr name="textSize" format="dimension"/>
         <attr name="clockColor" format="color"/>
         <attr name="startValue" format="integer"/>
@@ -16,7 +20,10 @@
     <declare-styleable name="ClockFace">
         <attr name="hoursClockColor" format="color"/>
         <attr name="minutesClockColor" format="color"/>
-        <attr name="hoursCount" format="integer"/>
+        <attr name="hoursCount" format="enum">
+            <enum name="twenty_four" value="24"/>
+            <enum name="twelve" value="12"/>
+        </attr>
         <attr name="circleRadius" format="integer"/>
         <attr name="numbersSize" format="dimension"/>
         <attr name="hoursTextColor" format="color"/>

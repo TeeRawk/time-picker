@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
+import android.support.annotation.IntDef;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -33,14 +34,16 @@ public class TimePicker extends View {
     public final static int MAX_ANGLE = 360;
     private final static int TEXT_OFFSETX_DP = 12;
     private final static int TEXT_SIZE_DP = 16;
-    private final static int SLOW_DOWN_ANIMATION_DURATION = 300;
-    private final static int ROTATION_ANIMATION_DURATION = 2000;
-    private final int ROTATION_STEP = 20;
+    private final static int SLOW_DOWN_ANIMATION_DURATION = 500;
+    private final static int ROTATION_ANIMATION_DURATION = 1800;
+    private final static int ROTATION_STEP = 20;
     private final static int ANIMATIONS_CLEAR_DELAY = 30;
     private final static float SLOW_ROTATION_STEP = 2f;
-    private final static double INTERPOLATED_TIME_LIMIT = 0.7;
+    private final static double ROTATION_INTERPOLATION_LIMIT = 0.8;
     private final static int STROKE_WIDTH = 7;
     private final static int TEXT_SELECTION_SIZE_DIFF = 5;
+    private final static int SLOW_DOWN_ROTATION_DURATION = 1500;
+    private final double SLOW_DOWN_INTERPOLATION_LIMIT = 0.7;
 
     private int mCirclePositionY;
     private Paint mCirclePaint;
@@ -53,11 +56,27 @@ public class TimePicker extends View {
     private Paint mTextPaint;
     private int mNumbersCount = 12;
     private float mYVelocity;
-    private int mGravity = 0;
     private boolean isDrag;
     private boolean isRotationAnimating;
     private Paint mHighlightPaint;
     private int mAngleBetweenNumbers;
+
+    @IntDef({TWELVE_HOURS, TWENTY_FOUR_HOURS, SIXTY_MINUTES})
+    public @interface DivisionNumber {
+    }
+
+    public static final int TWELVE_HOURS = 12;
+    public static final int TWENTY_FOUR_HOURS = 24;
+    public static final int SIXTY_MINUTES = 60;
+
+    @IntDef({GRAVITY_LEFT, GRAVITY_RIGHT})
+    public @interface Gravity {
+    }
+
+    public static final int GRAVITY_LEFT = 1;
+    public static final int GRAVITY_RIGHT = -1;
+
+    private int mGravity = GRAVITY_LEFT;
 
     public static class TimePickerBuilder {
         private final Context mContext;
@@ -67,8 +86,10 @@ public class TimePicker extends View {
         private int mCircleColor;
         private int mTextSize;
         private int mSelectedNumber;
-        private int mGravity;
-        private int mNumbersCount;
+        @Gravity
+        private int mGravity = GRAVITY_LEFT;
+        @DivisionNumber
+        private int mNumbersCount = TWELVE_HOURS;
 
         public TimePickerBuilder(Context context) {
             this.mContext = context;
@@ -119,12 +140,12 @@ public class TimePicker extends View {
             return this;
         }
 
-        public TimePickerBuilder setGravity(int gravity) {
+        public TimePickerBuilder setGravity(@Gravity int gravity) {
             this.mGravity = gravity;
             return this;
         }
 
-        public TimePickerBuilder setNumbersCount(int count) {
+        public TimePickerBuilder setNumbersCount(@DivisionNumber int count) {
             mNumbersCount = count;
             return this;
         }
@@ -170,7 +191,7 @@ public class TimePicker extends View {
                     0, 0);
 
             try {
-                mNumbersCount = a.getInteger(R.styleable.TimePicker_numbersCount, mNumbersCount);
+                mNumbersCount = a.getInteger(R.styleable.TimePicker_divisionCount, mNumbersCount);
                 circleColor = a.getColor(R.styleable.TimePicker_clockColor, circleColor);
                 textColor = a.getColor(R.styleable.TimePicker_textColor, textColor);
                 highlightColor = a.getColor(R.styleable.TimePicker_highlightColor, highlightColor);
@@ -206,8 +227,8 @@ public class TimePicker extends View {
         invalidate();
     }
 
-    public float getSelectedNumber() {
-        float selectedNumber = (float) Math.round(-mRotateAngle) / (MAX_ANGLE / mNumbersCount);
+    public int getSelectedNumber() {
+        int selectedNumber = Math.round((float) Math.round(-mRotateAngle) / (MAX_ANGLE / mNumbersCount));
         if (selectedNumber < 0) {
             selectedNumber = mNumbersCount + selectedNumber;
         }
@@ -219,7 +240,7 @@ public class TimePicker extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         //checking the gravity and mirroring the time picker
-        if (mGravity == 0) {
+        if (mGravity == GRAVITY_LEFT) {
             mCirclePositionX = -mCircleRadius / 3;
         } else {
             mCirclePositionX = getMeasuredWidth() + mCircleRadius / 3;
@@ -248,7 +269,7 @@ public class TimePicker extends View {
         float selectedNumber = getSelectedNumber();
         // we should rotate in a different direction when view has right gravity,
         // to ensure all two pickers rotating in the same direction
-        if (mGravity == 0) {
+        if (mGravity == GRAVITY_LEFT) {
             canvas.rotate(mRotateAngle, mCirclePositionX, mCirclePositionY);
         } else {
             canvas.rotate(-mRotateAngle, mCirclePositionX, mCirclePositionY);
@@ -270,7 +291,7 @@ public class TimePicker extends View {
     private float getTextX(String text) {
         final Rect textBounds = new Rect();
         mTextPaint.getTextBounds(text, 0, text.length(), textBounds);
-        if (mGravity == 0) {
+        if (mGravity == GRAVITY_LEFT) {
             return mCirclePositionX + (mCircleRadius) - textBounds.right - DimenUtils.convertDpToPixel(mContext, TEXT_OFFSETX_DP);
         } else {
             return mCirclePositionX - mCircleRadius + textBounds.left + DimenUtils.convertDpToPixel(mContext, TEXT_OFFSETX_DP);
@@ -288,12 +309,6 @@ public class TimePicker extends View {
         }
     }
 
-
-    /**
-     * @param number
-     * @return returns a string that contains number in a canonize form, like 01,02,03.
-     * The last and the first number on the clock is 00.
-     */
     private String canonizeNumber(Integer number) {
         String text = String.valueOf(number);
         if (number < 10) {
@@ -305,7 +320,7 @@ public class TimePicker extends View {
     }
 
     private void rotateCircleOneNotch(Canvas canvas) {
-        if (mGravity == 0) {
+        if (mGravity == GRAVITY_LEFT) {
             canvas.rotate(MAX_ANGLE / mNumbersCount, mCirclePositionX, mCirclePositionY);
 
         } else {
@@ -373,7 +388,7 @@ public class TimePicker extends View {
     private void rotateToClosestNumber() {
         final float distanceToClosestNumber = MathUtils.getDistanceToClosestNumber(mYVelocity, mRotateAngle, mAngleBetweenNumbers);
         final float tmpAngle = mRotateAngle;
-        startSlowdownAnimation(new Animation() {
+        startRotateToClosestAnimation(new Animation() {
             @Override
             protected void applyTransformation(float interpolatedTime, Transformation t) {
                 mRotateAngle = tmpAngle - (distanceToClosestNumber * interpolatedTime);
@@ -382,7 +397,7 @@ public class TimePicker extends View {
         });
     }
 
-    private void startSlowdownAnimation(Animation animation) {
+    private void startRotateToClosestAnimation(Animation animation) {
         animation.setInterpolator(new LinearInterpolator());
         animation.setDuration(SLOW_DOWN_ANIMATION_DURATION);
         startAnimation(animation);
@@ -394,23 +409,39 @@ public class TimePicker extends View {
         invalidate();
     }
 
-    private void rotateAnimation() {
+    private void startSlowDownAnimation() {
         final float tmpAngle = mRotateAngle;
         startRotation(new Animation() {
             @Override
             protected void applyTransformation(float interpolatedTime, Transformation t) {
-                if (interpolatedTime < INTERPOLATED_TIME_LIMIT) {
-                    mRotateAngle = tmpAngle + mYVelocity * ROTATION_STEP * interpolatedTime;
+                if (interpolatedTime < SLOW_DOWN_INTERPOLATION_LIMIT) {
+                    mRotateAngle = tmpAngle + (2 * mAngleBetweenNumbers) * (mYVelocity / Math.abs(mYVelocity)) * interpolatedTime;
                 } else {
                     rotateToClosestNumber();
                 }
                 getCanonicalAngle();
                 invalidate();
             }
-        });
+        }, SLOW_DOWN_ROTATION_DURATION);
     }
 
-    private void startRotation(Animation rotation) {
+    private void rotateAnimation() {
+        final float tmpAngle = mRotateAngle;
+        startRotation(new Animation() {
+            @Override
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+                if (interpolatedTime < ROTATION_INTERPOLATION_LIMIT) {
+                    mRotateAngle = tmpAngle + mYVelocity * ROTATION_STEP * interpolatedTime;
+                } else {
+                    startSlowDownAnimation();
+                }
+                getCanonicalAngle();
+                invalidate();
+            }
+        }, ROTATION_ANIMATION_DURATION);
+    }
+
+    private void startRotation(Animation rotation, int duration) {
         rotation.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
@@ -428,7 +459,7 @@ public class TimePicker extends View {
             }
         });
         rotation.setInterpolator(new DecelerateInterpolator());
-        rotation.setDuration(ROTATION_ANIMATION_DURATION);
+        rotation.setDuration(duration);
         if (VelocityUtils.isLowVelocity(mYVelocity)) {
             startAnimation(rotation);
         } else {
