@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:id="@+id/holder"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:background="@color/colorBg"
               android:orientation="vertical">
 
+
     <com.yalantis.library.ClockFace
+        android:id="@+id/clock"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:hoursClockColor="@color/clockBG"
-        app:hoursCount="twenty_four"
-        app:hoursHighlightColor="@color/hoursSelectedColor"
+        app:hoursCount="twelve"
+        app:hoursHighlightColor="@android:color/white"
         app:hoursTextColor="@color/textColor"
         app:minutesClockColor="@color/clockBG"
-        app:minutesHighlightColor="@color/minutesSelectedColor"
+        app:minutesHighlightColor="@android:color/white"
         app:minutesTextColor="@color/textColor"/>
 
 </LinearLayout>
