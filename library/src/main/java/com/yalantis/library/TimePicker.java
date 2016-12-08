@@ -35,9 +35,8 @@ import com.yalantis.library.utils.VelocityUtils;
  */
 public class TimePicker extends View {
     private final Context mContext = getContext();
-    private final static int CIRCLE_RADIUS_DP = 0;
     public final static int MAX_ANGLE = 360;
-    private final static int TEXT_OFFSETX_DP = 66;
+    private final static int TEXT_OFFSETX_DP = 85;
     private final static int TEXT_SIZE_DP = 16;
     private final static int SLOW_DOWN_ANIMATION_DURATION = 500;
     private final static int ROTATION_ANIMATION_DURATION = 1800;
@@ -45,14 +44,12 @@ public class TimePicker extends View {
     private final static int ANIMATIONS_CLEAR_DELAY = 30;
     private final static float SLOW_ROTATION_STEP = 2f;
     private final static double ROTATION_INTERPOLATION_LIMIT = 0.9;
-    private final static int STROKE_WIDTH = 7;
     private final static int TEXT_SELECTION_SIZE_DIFF = 5;
     private final static int SLOW_DOWN_ROTATION_DURATION = 1500;
     private final double SLOW_DOWN_INTERPOLATION_LIMIT = 0.7;
 
     private int mCirclePositionY;
     private Paint mCirclePaint;
-    private int mCircleRadius;
     private float mCirclePositionX;
     private volatile float mRotateAngle;
     private int mTouchActionDownY;
@@ -69,6 +66,7 @@ public class TimePicker extends View {
 
     private OnRotationListner mOnRotationListner;
     private Bitmap mOverlayDrawable;
+    private Bitmap mSeletionBackgroundDrawable;
 
     public OnRotationListner getOnRotationListner() {
         return mOnRotationListner;
@@ -185,15 +183,16 @@ public class TimePicker extends View {
         mRotateAngle = selectedNumber * mAngleBetweenNumbers;
         mGravity = gravity;
         mNumbersCount = numbersCount;
-        mCircleRadius = circleRadius;
         if (mNumbersCount != 0) {
             mAngleBetweenNumbers = MAX_ANGLE / mNumbersCount;
         }
         mCircleDrawable = BitmapFactory.decodeResource(context.getResources(), drawableRes);
         if (mGravity == GRAVITY_LEFT) {
             mOverlayDrawable = BitmapFactory.decodeResource(context.getResources(), R.drawable.overlay);
+            mSeletionBackgroundDrawable = BitmapFactory.decodeResource(context.getResources(), R.drawable.overlay_copy);
         } else if (mGravity == GRAVITY_RIGHT) {
             mOverlayDrawable = BitmapFactory.decodeResource(context.getResources(), R.drawable.overlay_2);
+            mSeletionBackgroundDrawable = BitmapFactory.decodeResource(context.getResources(), R.drawable.overlay_2_copy);
         }
         initPaints(circleColor, textColor, highlightColor, textSize);
     }
@@ -235,7 +234,6 @@ public class TimePicker extends View {
                 a.recycle();
             }
             initPaints(circleColor, textColor, highlightColor, textSize);
-            mCircleRadius = DimenUtils.convertDpToPixel(mContext, CIRCLE_RADIUS_DP);
             mAngleBetweenNumbers = MAX_ANGLE / mNumbersCount;
         }
 
@@ -333,29 +331,29 @@ public class TimePicker extends View {
 
         canvas.drawBitmap(mCircleDrawable, mCirclePositionX, drawableTop, new Paint());
 
-        drawNumbersOnWatchFace(canvas, Math.round(selectedNumber));
-
         if (mGravity != GRAVITY_CENTER) {
-            drawOverlay(canvas);
+            drawOverlay(canvas, mSeletionBackgroundDrawable);
+            drawNumbersOnWatchFace(canvas, Math.round(selectedNumber));
+            drawOverlay(canvas, mOverlayDrawable);
         }
     }
 
-    private void drawOverlay(Canvas canvas) {
+    private void drawOverlay(Canvas canvas, Bitmap bitmap) {
         Matrix matrix = new Matrix();
         int overlayTop = mCirclePositionY - mOverlayDrawable.getHeight() / 2;
         int overlayOffsetX = 0;
         int overlayOffsetY = 0;
         if (mGravity == GRAVITY_RIGHT) {
-            overlayOffsetX = DimenUtils.convertDpToPixel(mContext, 15);
+            overlayOffsetX = DimenUtils.convertDpToPixel(mContext, 40);
             overlayOffsetY = DimenUtils.convertDpToPixel(mContext, 5);
-            matrix.postRotate(mRotateAngle, getMeasuredWidth() - mOverlayDrawable.getWidth() / 2.5f + (mOverlayDrawable.getWidth() / 2), overlayTop + (mOverlayDrawable.getHeight() / 2));
+            matrix.postRotate(mRotateAngle, mCirclePositionX + (mCircleDrawable.getWidth() / 2), overlayTop + (mOverlayDrawable.getHeight() / 2));
         } else if (mGravity == GRAVITY_LEFT) {
-            overlayOffsetX = DimenUtils.convertDpToPixel(mContext, 60);
+            overlayOffsetX = DimenUtils.convertDpToPixel(mContext, 45);
             overlayOffsetY = 0;
             matrix.postRotate(-mRotateAngle, -mOverlayDrawable.getWidth() / 2 + (mOverlayDrawable.getWidth() / 2), overlayTop + (mOverlayDrawable.getHeight() / 2));
         }
         matrix.preTranslate(mCirclePositionX + overlayOffsetX, overlayTop - overlayOffsetY);
-        canvas.drawBitmap(mOverlayDrawable, matrix, new Paint());
+        canvas.drawBitmap(bitmap, matrix, new Paint());
     }
 
     private void drawNumbersOnWatchFace(Canvas canvas, int selectedNumber) {

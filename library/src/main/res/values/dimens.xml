@@ -2,4 +2,5 @@
 <resources>
     <dimen name="additional_wheel_left_margin">50dp</dimen>
     <dimen name="additional_wheel_top_margin">28dp</dimen>
+    <dimen name="hours_picker_margin_right">-40dp</dimen>
 </resources>

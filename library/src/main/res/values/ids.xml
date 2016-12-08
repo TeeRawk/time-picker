@@ -2,4 +2,5 @@
 <resources>
     <item name="hours_piker" type="id"/>
     <item name="minutes_picker" type="id"/>
+    <item name="position_view" type="id"/>
 </resources>

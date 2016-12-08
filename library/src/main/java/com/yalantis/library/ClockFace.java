@@ -25,6 +25,7 @@ public class ClockFace extends RelativeLayout {
     private TimePicker mAdditionalPicker;
     private LayoutParams mHoursParams;
     private LayoutParams mAdditionalParams;
+    private LayoutParams mMinutesParams;
 
     public ClockFace(Context context) {
         this(context, null);
@@ -104,8 +105,7 @@ public class ClockFace extends RelativeLayout {
                 .build();
 
         ImageView additionalGear = new ImageView(getContext());
-        additionalGear.setImageDrawable(getContext().getResources().getDrawable(R.drawable.additional_gear));
-        mHoursPicker.setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        additionalGear.setImageDrawable(getContext().getResources().getDrawable(R.drawable.gear_1));
         mHoursPicker.setOnRotationListner(new OnRotationListner() {
             @Override
             public void onRotate(float angle, float velocity) {
@@ -120,10 +120,10 @@ public class ClockFace extends RelativeLayout {
 
         mAdditionalParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
-        LayoutParams minutesParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        minutesParams.addRule(ALIGN_PARENT_RIGHT);
-        minutesParams.addRule(CENTER_VERTICAL);
-        mMinutePicker.setLayoutParams(minutesParams);
+        mMinutesParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+        mMinutesParams.addRule(CENTER_VERTICAL);
+
 
         addPickerToLayout(mAdditionalPicker);
         addPickerToLayout(mHoursPicker);
@@ -142,16 +142,29 @@ public class ClockFace extends RelativeLayout {
         super.onLayout(changed, l, t, r, b);
         if (mMinutePicker.getWidth() <= r / 2) {
             mHoursParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+            mMinutesParams.addRule(ALIGN_PARENT_RIGHT);
         } else {
-            mHoursParams.addRule(RelativeLayout.LEFT_OF, R.id.minutes_picker);
+            setPickersFitInScreen(r);
         }
         mHoursParams.addRule(CENTER_VERTICAL);
         mHoursPicker.setLayoutParams(mHoursParams);
+        mMinutePicker.setLayoutParams(mMinutesParams);
 
+        additionalWheelSetUp();
+    }
+
+    private void additionalWheelSetUp() {
         mAdditionalParams.addRule(RelativeLayout.ALIGN_TOP, R.id.minutes_picker);
         mAdditionalParams.addRule(RelativeLayout.LEFT_OF, R.id.minutes_picker);
         mAdditionalParams.setMargins(0, mHoursPicker.getHeight() + getContext().getResources().getDimensionPixelSize(R.dimen.additional_wheel_top_margin), 0, 0);
         mAdditionalPicker.setLayoutParams(mAdditionalParams);
+    }
+
+    private void setPickersFitInScreen(int r) {
+        int hoursPickerOffsetX = r / 2 - mHoursPicker.getWidth();
+        mHoursPicker.setX(hoursPickerOffsetX);
+        int minutesPickerOffsetX = (r - mMinutePicker.getWidth()) + (mMinutePicker.getWidth() - r / 2);
+        mMinutesParams.setMargins(minutesPickerOffsetX,0,0,0);
     }
 
 
