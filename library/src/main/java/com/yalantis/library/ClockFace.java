@@ -26,6 +26,12 @@ public class ClockFace extends RelativeLayout {
     private LayoutParams mHoursParams;
     private LayoutParams mAdditionalParams;
     private LayoutParams mMinutesParams;
+    private TimePicker mAdditionalPicker1;
+    private LayoutParams mAdditionalParams1;
+    private LayoutParams mAdditionalParams2;
+    private TimePicker mAdditionalPicker2;
+    private TimePicker mAdditionalPicker3;
+    private LayoutParams mAdditionalParams3;
 
     public ClockFace(Context context) {
         this(context, null);
@@ -75,7 +81,7 @@ public class ClockFace extends RelativeLayout {
                 .setCircleRadius(circleRadius)
                 .setTextColor(hoursTextColor)
                 .setCircleColor(hoursClockColor)
-                .setCircleBackground(R.drawable.gear_vector_1)
+                .setCircleBackground(R.drawable.gear_1)
                 .setHighlightColor(hoursSelectedTextColor)
                 .setTextSize(textSize)
                 .setNumbersCount(divisionNumber)
@@ -86,39 +92,57 @@ public class ClockFace extends RelativeLayout {
                 .setTextSize(textSize)
                 .setHighlightColor(minutesSelectedTextColor)
                 .setTextColor(minutesTextColor)
-                .setCircleBackground(R.drawable.gear_vector_2)
+                .setCircleBackground(R.drawable.gear_2)
                 .setCircleColor(minutesClockColor)
                 .setGravity(TimePicker.GRAVITY_RIGHT)
                 .setNumbersCount(TimePicker.SIXTY_MINUTES)
                 .build();
 
 
-        mAdditionalPicker = new TimePicker.TimePickerBuilder(getContext())
-                .setCircleRadius(circleRadius)
-                .setTextSize(textSize)
-                .setHighlightColor(minutesSelectedTextColor)
-                .setTextColor(minutesTextColor)
-                .setCircleBackground(R.drawable.gear_vector_1)
-                .setCircleColor(minutesClockColor)
-                .setGravity(TimePicker.GRAVITY_CENTER)
-                .setNumbersCount(TimePicker.ZERO)
-                .build();
+        mAdditionalPicker = getAdditionalWheel(minutesClockColor, minutesSelectedTextColor, minutesTextColor, textSize, circleRadius);
+
+        mAdditionalPicker1 = getAdditionalWheel(minutesClockColor, minutesSelectedTextColor, minutesTextColor, textSize, circleRadius);
+
+        mAdditionalPicker2 = getAdditionalWheel(minutesClockColor, minutesSelectedTextColor, minutesTextColor, textSize, circleRadius);
+
+        mAdditionalPicker3 = getAdditionalWheel(minutesClockColor, minutesSelectedTextColor, minutesTextColor, textSize, circleRadius);
 
         ImageView additionalGear = new ImageView(getContext());
         additionalGear.setImageDrawable(getContext().getResources().getDrawable(R.drawable.gear_1));
+
+        mMinutePicker.setOnRotationListner(new OnRotationListner() {
+            @Override
+            public void onRotate(float angle, float velocity) {
+                mAdditionalPicker.rotate(angle, velocity);
+                mAdditionalPicker1.rotate(angle, velocity);
+                mAdditionalPicker2.rotate(angle, velocity);
+                mAdditionalPicker3.rotate(angle, velocity);
+            }
+        });
+
         mHoursPicker.setOnRotationListner(new OnRotationListner() {
             @Override
             public void onRotate(float angle, float velocity) {
                 mAdditionalPicker.rotate(angle, velocity);
+                mAdditionalPicker1.rotate(angle, velocity);
+                mAdditionalPicker2.rotate(angle, velocity);
+                mAdditionalPicker3.rotate(angle, velocity);
             }
         });
+
+        mAdditionalPicker1.setId(R.id.additional_wheel);
+        mAdditionalPicker2.setId(R.id.additional_wheel1);
         mHoursPicker.setId(R.id.hours_piker);
         mMinutePicker.setId(R.id.minutes_picker);
         mHoursParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mHoursParams.addRule(CENTER_VERTICAL);
         mHoursPicker.setLayoutParams(mHoursParams);
 
-        mAdditionalParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        mAdditionalParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        mAdditionalParams1 = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        mAdditionalParams2 = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        mAdditionalParams3 = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
         mMinutesParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
@@ -126,8 +150,25 @@ public class ClockFace extends RelativeLayout {
 
 
         addPickerToLayout(mAdditionalPicker);
-        addPickerToLayout(mHoursPicker);
+        addPickerToLayout(mAdditionalPicker2);
+        addPickerToLayout(mAdditionalPicker3);
+        addPickerToLayout(mAdditionalPicker1);
+
         addPickerToLayout(mMinutePicker);
+        addPickerToLayout(mHoursPicker);
+    }
+
+    private TimePicker getAdditionalWheel(int minutesClockColor, int minutesSelectedTextColor, int minutesTextColor, int textSize, int circleRadius) {
+        return new TimePicker.TimePickerBuilder(getContext())
+                .setCircleRadius(circleRadius)
+                .setTextSize(textSize)
+                .setHighlightColor(minutesSelectedTextColor)
+                .setTextColor(minutesTextColor)
+                .setCircleBackground(R.drawable.shape_copy_5)
+                .setCircleColor(minutesClockColor)
+                .setGravity(TimePicker.GRAVITY_CENTER)
+                .setNumbersCount(TimePicker.ZERO)
+                .build();
     }
 
 
@@ -154,17 +195,23 @@ public class ClockFace extends RelativeLayout {
     }
 
     private void additionalWheelSetUp() {
-        mAdditionalParams.addRule(RelativeLayout.ALIGN_TOP, R.id.minutes_picker);
-        mAdditionalParams.addRule(RelativeLayout.LEFT_OF, R.id.minutes_picker);
-        mAdditionalParams.setMargins(0, mHoursPicker.getHeight() + getContext().getResources().getDimensionPixelSize(R.dimen.additional_wheel_top_margin), 0, 0);
+        mAdditionalParams.addRule(RelativeLayout.BELOW, R.id.hours_piker);
+        mAdditionalParams1.addRule(CENTER_HORIZONTAL);
+        mAdditionalParams1.addRule(ALIGN_TOP, R.id.minutes_picker);
+        mAdditionalParams2.setMargins(0, (int) (mHoursPicker.getY() / 2) + mHoursPicker.getHeight() / 2, 0, 0);
+        mAdditionalParams3.setMargins(mAdditionalPicker2.getWidth() - DimenUtils.convertDpToPixel(getContext(), 16), 0, 0, 0);
+        mAdditionalParams3.addRule(ALIGN_BOTTOM, R.id.minutes_picker);
         mAdditionalPicker.setLayoutParams(mAdditionalParams);
+        mAdditionalPicker1.setLayoutParams(mAdditionalParams1);
+        mAdditionalPicker2.setLayoutParams(mAdditionalParams2);
+        mAdditionalPicker3.setLayoutParams(mAdditionalParams3);
     }
 
     private void setPickersFitInScreen(int r) {
         int hoursPickerOffsetX = r / 2 - mHoursPicker.getWidth();
         mHoursPicker.setX(hoursPickerOffsetX);
         int minutesPickerOffsetX = (r - mMinutePicker.getWidth()) + (mMinutePicker.getWidth() - r / 2);
-        mMinutesParams.setMargins(minutesPickerOffsetX,0,0,0);
+        mMinutesParams.setMargins(minutesPickerOffsetX, 0, 0, 0);
     }
 
 
