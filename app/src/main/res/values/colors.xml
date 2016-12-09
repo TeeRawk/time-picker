@@ -5,7 +5,7 @@
     <color name="colorAccent">#FF4081</color>
     <color name="colorBg">#dedfe3</color>
     <color name="clockBG">#8a572a</color>
-    <color name="textColor">#bc8557</color>
+    <color name="textColor">#011740</color>
     <color name="hoursSelectedColor">#2b85f5</color>
     <color name="minutesSelectedColor">#989cf9</color>
 </resources>

@@ -1,5 +1,6 @@
 package com.yalantis.library;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
@@ -9,13 +10,20 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
+import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.widget.AppCompatDrawableManager;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
@@ -36,7 +44,7 @@ import com.yalantis.library.utils.VelocityUtils;
 public class TimePicker extends View {
     private final Context mContext = getContext();
     public final static int MAX_ANGLE = 360;
-    private final static int TEXT_OFFSETX_DP = 85;
+    private int TEXT_OFFSETX_DP = 0;
     private final static int TEXT_SIZE_DP = 16;
     private final static int SLOW_DOWN_ANIMATION_DURATION = 500;
     private final static int ROTATION_ANIMATION_DURATION = 1800;
@@ -186,15 +194,32 @@ public class TimePicker extends View {
         if (mNumbersCount != 0) {
             mAngleBetweenNumbers = MAX_ANGLE / mNumbersCount;
         }
-        mCircleDrawable = BitmapFactory.decodeResource(context.getResources(), drawableRes);
+        mCircleDrawable = getBitmapFromVectorDrawable(mContext, drawableRes);
         if (mGravity == GRAVITY_LEFT) {
-            mOverlayDrawable = BitmapFactory.decodeResource(context.getResources(), R.drawable.overlay);
-            mSeletionBackgroundDrawable = BitmapFactory.decodeResource(context.getResources(), R.drawable.overlay_copy);
+            TEXT_OFFSETX_DP = 120;
+            mOverlayDrawable = getBitmapFromVectorDrawable(mContext, R.drawable.overlay_hours);
+            mSeletionBackgroundDrawable = getBitmapFromVectorDrawable(mContext, R.drawable.overlay_selected);
         } else if (mGravity == GRAVITY_RIGHT) {
-            mOverlayDrawable = BitmapFactory.decodeResource(context.getResources(), R.drawable.overlay_2);
-            mSeletionBackgroundDrawable = BitmapFactory.decodeResource(context.getResources(), R.drawable.overlay_2_copy);
+            TEXT_OFFSETX_DP = 70;
+            mOverlayDrawable = getBitmapFromVectorDrawable(mContext, R.drawable.overlay_minutes);
+            mSeletionBackgroundDrawable = getBitmapFromVectorDrawable(mContext, R.drawable.overlay_selected_minutes);
         }
         initPaints(circleColor, textColor, highlightColor, textSize);
+    }
+
+    public static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
+        Drawable drawable = AppCompatDrawableManager.get().getDrawable(context, drawableId);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            drawable = (DrawableCompat.wrap(drawable)).mutate();
+        }
+
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
+                drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+
+        return bitmap;
     }
 
     public TimePicker(Context context, AttributeSet attrs) {
@@ -215,7 +240,7 @@ public class TimePicker extends View {
         mCirclePaint = new Paint();
         mHighlightPaint = new Paint();
         mTextPaint = new Paint();
-        //setLayerType(LAYER_TYPE_HARDWARE, mCirclePaint);
+        setLayerType(LAYER_TYPE_HARDWARE, mCirclePaint);
         //  setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         if (attrs != null) {
             TypedArray a = mContext.getTheme().obtainStyledAttributes(
@@ -277,7 +302,9 @@ public class TimePicker extends View {
                 selectedNumber = mNumbersCount + selectedNumber;
             }
         }
-        return selectedNumber;
+
+
+        return selectedNumber >= mNumbersCount ? 0 : selectedNumber;
     }
 
     @Override
@@ -332,23 +359,23 @@ public class TimePicker extends View {
         canvas.drawBitmap(mCircleDrawable, mCirclePositionX, drawableTop, new Paint());
 
         if (mGravity != GRAVITY_CENTER) {
-            drawOverlay(canvas, mSeletionBackgroundDrawable);
+            drawOverlay(canvas, mSeletionBackgroundDrawable, -2);
             drawNumbersOnWatchFace(canvas, Math.round(selectedNumber));
-            drawOverlay(canvas, mOverlayDrawable);
+            drawOverlay(canvas, mOverlayDrawable, 0);
         }
     }
 
-    private void drawOverlay(Canvas canvas, Bitmap bitmap) {
+    private void drawOverlay(Canvas canvas, Bitmap bitmap, int offsetx) {
         Matrix matrix = new Matrix();
         int overlayTop = mCirclePositionY - mOverlayDrawable.getHeight() / 2;
         int overlayOffsetX = 0;
         int overlayOffsetY = 0;
         if (mGravity == GRAVITY_RIGHT) {
-            overlayOffsetX = DimenUtils.convertDpToPixel(mContext, 40);
+            overlayOffsetX = DimenUtils.convertDpToPixel(mContext, 40) - DimenUtils.convertDpToPixel(mContext, offsetx);
             overlayOffsetY = DimenUtils.convertDpToPixel(mContext, 5);
             matrix.postRotate(mRotateAngle, mCirclePositionX + (mCircleDrawable.getWidth() / 2), overlayTop + (mOverlayDrawable.getHeight() / 2));
         } else if (mGravity == GRAVITY_LEFT) {
-            overlayOffsetX = DimenUtils.convertDpToPixel(mContext, 45);
+            overlayOffsetX = DimenUtils.convertDpToPixel(mContext, 45) + DimenUtils.convertDpToPixel(mContext, offsetx);
             overlayOffsetY = 0;
             matrix.postRotate(-mRotateAngle, -mOverlayDrawable.getWidth() / 2 + (mOverlayDrawable.getWidth() / 2), overlayTop + (mOverlayDrawable.getHeight() / 2));
         }
