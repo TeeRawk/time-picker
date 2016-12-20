@@ -1,6 +1,5 @@
 package com.yalantis.library;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
@@ -10,20 +9,13 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.VectorDrawable;
-import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v7.widget.AppCompatDrawableManager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
@@ -38,23 +30,16 @@ import com.yalantis.library.utils.DimenUtils;
 import com.yalantis.library.utils.MathUtils;
 import com.yalantis.library.utils.VelocityUtils;
 
+import static com.yalantis.library.Constants.*;
+
 /**
  * Created by Alexey on 04.08.2016.
  */
-public class TimePicker extends View {
-    private final Context mContext = getContext();
-    public final static int MAX_ANGLE = 360;
+class TimePicker extends View {
     private int TEXT_OFFSETX_DP = 0;
-    private final static int TEXT_SIZE_DP = 16;
-    private final static int SLOW_DOWN_ANIMATION_DURATION = 500;
-    private final static int ROTATION_ANIMATION_DURATION = 1800;
-    private final static int ROTATION_STEP = 20;
-    private final static int ANIMATIONS_CLEAR_DELAY = 30;
-    private final static float SLOW_ROTATION_STEP = 2f;
-    private final static double ROTATION_INTERPOLATION_LIMIT = 0.9;
-    private final static int TEXT_SELECTION_SIZE_DIFF = 5;
-    private final static int SLOW_DOWN_ROTATION_DURATION = 1500;
-    private final double SLOW_DOWN_INTERPOLATION_LIMIT = 0.7;
+    private final static int TEXT_SIZE_DP = 0;
+    private final Context mContext = getContext();
+    private final int mPivotOffsetX = DimenUtils.convertDpToPixel(mContext, 3);
 
     private int mCirclePositionY;
     private Paint mCirclePaint;
@@ -67,22 +52,23 @@ public class TimePicker extends View {
     private int mNumbersCount = 12;
     private float mYVelocity;
     private boolean isDrag;
-    private boolean isRotationAnimating;
+    public boolean isRotationAnimating;
     private Paint mHighlightPaint;
     private int mAngleBetweenNumbers;
     private Bitmap mCircleDrawable;
 
-    private OnRotationListner mOnRotationListner;
+    private OnRotationListener mOnRotationListener;
     private Bitmap mOverlayDrawable;
-    private Bitmap mSeletionBackgroundDrawable;
+    private Bitmap mSelectionBackgroundDrawable;
     private float mPreviousAngle;
+    private int mPivotOffsetY = DimenUtils.convertDpToPixel(mContext, 8);
 
-    public OnRotationListner getOnRotationListner() {
-        return mOnRotationListner;
+    public OnRotationListener getOnRotationListner() {
+        return mOnRotationListener;
     }
 
-    public void setOnRotationListner(OnRotationListner onRotationListner) {
-        mOnRotationListner = onRotationListner;
+    public void setOnRotationListner(OnRotationListener onRotationListener) {
+        mOnRotationListener = onRotationListener;
     }
 
     @IntDef({TWELVE_HOURS, TWENTY_FOUR_HOURS, SIXTY_MINUTES, ZERO})
@@ -104,92 +90,70 @@ public class TimePicker extends View {
 
     private int mGravity = GRAVITY_LEFT;
 
-    public static class TimePickerBuilder {
+    static class TimePickerBuilder {
         private final Context mContext;
-        private int mCircleRadius;
         private int mTextColor;
         private int mHighLightColor;
-        private int mCircleColor;
         private int mCircleDrawable;
         private int mTextSize;
-        private int mSelectedNumber;
         @Gravity
         private int mGravity = GRAVITY_LEFT;
         @DivisionNumber
         private int mNumbersCount = TWELVE_HOURS;
 
-        public TimePickerBuilder(Context context) {
+        TimePickerBuilder(Context context) {
             this.mContext = context;
         }
 
-        public TimePickerBuilder setCircleRadius(int circleRadius) {
-            this.mCircleRadius = circleRadius;
-            return this;
-        }
-
-        protected TimePickerBuilder setTextColor(@ColorInt int color) {
+        TimePickerBuilder setTextColor(@ColorInt int color) {
             mTextColor = color;
             return this;
         }
 
-        protected TimePickerBuilder setTextColorRes(@ColorRes int color) {
+        TimePickerBuilder setTextColorRes(@ColorRes int color) {
             mTextColor = ContextCompat.getColor(mContext, color);
             return this;
         }
 
-        public TimePickerBuilder setHighlightColor(@ColorInt int color) {
+        TimePickerBuilder setHighlightColor(@ColorInt int color) {
             mHighLightColor = color;
             return this;
         }
 
-        public TimePickerBuilder setHighlightColorRes(@ColorRes int color) {
+        TimePickerBuilder setHighlightColorRes(@ColorRes int color) {
             mHighLightColor = ContextCompat.getColor(mContext, color);
             return this;
         }
 
-        public TimePickerBuilder setCircleColor(@ColorInt int color) {
-            mCircleColor = color;
-            return this;
-        }
-
-        public TimePickerBuilder setCircleBackground(@DrawableRes int drawable) {
+        TimePickerBuilder setCircleBackground(@DrawableRes int drawable) {
             mCircleDrawable = drawable;
             return this;
         }
 
-        public TimePickerBuilder setCircleColorRes(@ColorRes int color) {
-            mCircleColor = ContextCompat.getColor(mContext, color);
-            return this;
-        }
 
-        public TimePickerBuilder setTextSize(int size) {
+        TimePickerBuilder setTextSize(int size) {
             mTextSize = size;
             return this;
         }
 
-        public TimePickerBuilder setSelectedNumber(int number) {
-            mSelectedNumber = number;
-            return this;
-        }
 
-        public TimePickerBuilder setGravity(@Gravity int gravity) {
+        TimePickerBuilder setGravity(@Gravity int gravity) {
             this.mGravity = gravity;
             return this;
         }
 
-        public TimePickerBuilder setNumbersCount(@DivisionNumber int count) {
+        TimePickerBuilder setNumbersCount(@DivisionNumber int count) {
             mNumbersCount = count;
             return this;
         }
 
-        public TimePicker build() {
-            return new TimePicker(mContext, mNumbersCount, mTextColor, mHighLightColor, mCircleColor, mSelectedNumber, mTextSize, mGravity, mCircleRadius, mCircleDrawable);
+        TimePicker build() {
+            return new TimePicker(mContext, mNumbersCount, mTextColor, mHighLightColor, mTextSize, mGravity, mCircleDrawable);
         }
     }
 
-    private TimePicker(Context context, int numbersCount, int textColor, int highlightColor, int circleColor, int selectedNumber, int textSize, int gravity, int circleRadius, int drawableRes) {
+    private TimePicker(Context context, int numbersCount, int textColor, int highlightColor, int textSize, int gravity, int drawableRes) {
         this(context, null);
-        mRotateAngle = selectedNumber * mAngleBetweenNumbers;
         mGravity = gravity;
         mNumbersCount = numbersCount;
         if (mNumbersCount != 0) {
@@ -197,15 +161,15 @@ public class TimePicker extends View {
         }
         mCircleDrawable = BitmapFactory.decodeResource(context.getResources(), drawableRes);
         if (mGravity == GRAVITY_LEFT) {
-            TEXT_OFFSETX_DP = 120;
+            TEXT_OFFSETX_DP = 116;
             mOverlayDrawable = BitmapFactory.decodeResource(context.getResources(), R.drawable.overlay_1);
-            mSeletionBackgroundDrawable = BitmapFactory.decodeResource(context.getResources(), R.drawable.numbers_placeholder_1);
+            mSelectionBackgroundDrawable = BitmapFactory.decodeResource(context.getResources(), R.drawable.numbers_placeholder_1);
         } else if (mGravity == GRAVITY_RIGHT) {
-            TEXT_OFFSETX_DP = 80;
+            TEXT_OFFSETX_DP = 94;
             mOverlayDrawable = BitmapFactory.decodeResource(context.getResources(), R.drawable.overlay_2);
-            mSeletionBackgroundDrawable = BitmapFactory.decodeResource(context.getResources(), R.drawable.numbers_placeholder_2);
+            mSelectionBackgroundDrawable = BitmapFactory.decodeResource(context.getResources(), R.drawable.numbers_placeholder_2);
         }
-        initPaints(circleColor, textColor, highlightColor, textSize);
+        initPaints(textColor, highlightColor, textSize);
     }
 
     public TimePicker(Context context, AttributeSet attrs) {
@@ -227,7 +191,6 @@ public class TimePicker extends View {
         mHighlightPaint = new Paint();
         mTextPaint = new Paint();
         setLayerType(LAYER_TYPE_HARDWARE, mCirclePaint);
-        //  setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         if (attrs != null) {
             TypedArray a = mContext.getTheme().obtainStyledAttributes(
                     attrs,
@@ -236,7 +199,6 @@ public class TimePicker extends View {
 
             try {
                 mNumbersCount = a.getInteger(R.styleable.TimePicker_divisionCount, mNumbersCount);
-                circleColor = a.getColor(R.styleable.TimePicker_clockColor, circleColor);
                 textColor = a.getColor(R.styleable.TimePicker_textColor, textColor);
                 highlightColor = a.getColor(R.styleable.TimePicker_highlightColor, highlightColor);
                 textSize = a.getDimensionPixelSize(R.styleable.TimePicker_textSize, textSize);
@@ -244,7 +206,7 @@ public class TimePicker extends View {
             } finally {
                 a.recycle();
             }
-            initPaints(circleColor, textColor, highlightColor, textSize);
+            initPaints(textColor, highlightColor, textSize);
             mAngleBetweenNumbers = MAX_ANGLE / mNumbersCount;
         }
 
@@ -256,10 +218,9 @@ public class TimePicker extends View {
         return configuration.getScaledTouchSlop();
     }
 
-    private void initPaints(int circleColor, int textColor, int highlightColor, int textSize) {
+    private void initPaints(int textColor, int highlightColor, int textSize) {
         mHighlightPaint.setTextSize(DimenUtils.convertSpToPixel(getContext(), TEXT_SIZE_DP + TEXT_SELECTION_SIZE_DIFF));
         mTextPaint.setAntiAlias(true);
-        mCirclePaint.setColor(circleColor);
         mCirclePaint.setStyle(Paint.Style.STROKE);
         mCirclePaint.setStrokeWidth(200);
         mTextPaint.setColor(textColor);
@@ -283,12 +244,11 @@ public class TimePicker extends View {
     public int getSelectedNumber() {
         int selectedNumber = 0;
         if (mNumbersCount != 0) {
-            selectedNumber = Math.round((float) Math.round(-mRotateAngle * mGravity) / (MAX_ANGLE / mNumbersCount));
+            selectedNumber = Math.round((float) Math.round(-mRotateAngle) / (MAX_ANGLE / mNumbersCount));
             if (selectedNumber < 0) {
                 selectedNumber = mNumbersCount + selectedNumber;
             }
         }
-
 
         return selectedNumber >= mNumbersCount ? 0 : selectedNumber;
     }
@@ -301,8 +261,8 @@ public class TimePicker extends View {
             mCirclePositionX = -mCircleDrawable.getWidth() / 2;
             setMeasuredDimension(mCircleDrawable.getWidth() / 2, mCircleDrawable.getHeight());
         } else if (mGravity == GRAVITY_RIGHT) {
-            mCirclePositionX = getMeasuredWidth() - mCircleDrawable.getWidth() / 2.5f;
-            setMeasuredDimension((int) (mCircleDrawable.getWidth() / 2.5f), mCircleDrawable.getHeight());
+            mCirclePositionX = getMeasuredWidth() - mCircleDrawable.getWidth() / 2;
+            setMeasuredDimension(mCircleDrawable.getWidth() / 2, mCircleDrawable.getHeight());
         } else if (mGravity == GRAVITY_CENTER) {
             mCirclePositionX = 0;
             setMeasuredDimension(mCircleDrawable.getWidth(), mCircleDrawable.getHeight());
@@ -324,7 +284,6 @@ public class TimePicker extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         canvas.save();
-
         drawWatchFace(canvas);
         canvas.restore();
     }
@@ -334,25 +293,30 @@ public class TimePicker extends View {
         // we should rotate in a different direction when view has right gravity,
         // to ensure all two pickers rotating in the same direction
         int drawableTop = mCirclePositionY - mCircleDrawable.getHeight() / 2;
+        rotateCanvas(canvas);
 
-        if (mGravity == GRAVITY_LEFT) {
-            canvas.rotate(mRotateAngle, mCirclePositionX + (mCircleDrawable.getWidth() / 2), drawableTop + (mCircleDrawable.getHeight() / 2));
-
-        } else {
-            canvas.rotate(-mRotateAngle, mCirclePositionX + (mCircleDrawable.getWidth() / 2), drawableTop + (mCircleDrawable.getHeight() / 2));
-        }
-
-        if(mOnRotationListner!=null && mPreviousAngle!=mRotateAngle)
-            mOnRotationListner.onRotate(mRotateAngle, mYVelocity);
+        if (mOnRotationListener != null && mPreviousAngle != mRotateAngle)
+            mOnRotationListener.onRotate(mRotateAngle, mYVelocity);
 
         canvas.drawBitmap(mCircleDrawable, mCirclePositionX, drawableTop, new Paint());
 
         if (mGravity != GRAVITY_CENTER) {
-            drawOverlay(canvas, mSeletionBackgroundDrawable, 0);
+            drawOverlay(canvas, mSelectionBackgroundDrawable, -2);
             drawNumbersOnWatchFace(canvas, Math.round(selectedNumber));
             drawOverlay(canvas, mOverlayDrawable, 0);
         }
         mPreviousAngle = mRotateAngle;
+    }
+
+    private void rotateCanvas(Canvas canvas) {
+        if (mGravity == GRAVITY_LEFT) {
+            canvas.rotate(mRotateAngle, 0, mCirclePositionY);
+        } else if (mGravity == GRAVITY_RIGHT) {
+            canvas.rotate(-mRotateAngle, canvas.getWidth() + mPivotOffsetX, mCirclePositionY - mPivotOffsetY);
+        } else if (mGravity == GRAVITY_CENTER) {
+            canvas.rotate(-mRotateAngle, canvas.getWidth() / 2, canvas.getHeight() / 2 - DimenUtils.convertDpToPixel(mContext, 2));
+        }
+        isRotationAnimating = true;
     }
 
     private void drawOverlay(Canvas canvas, Bitmap bitmap, int offsetx) {
@@ -360,16 +324,19 @@ public class TimePicker extends View {
         int overlayTop = mCirclePositionY - mOverlayDrawable.getHeight() / 2;
         int overlayOffsetX = 0;
         int overlayOffsetY = 0;
+        int i = 0;
         if (mGravity == GRAVITY_RIGHT) {
-            overlayOffsetX = DimenUtils.convertDpToPixel(mContext, 60) - DimenUtils.convertDpToPixel(mContext, offsetx);
+            i = DimenUtils.convertDpToPixel(mContext, 5);
+            overlayOffsetX = DimenUtils.convertDpToPixel(mContext, 64) - DimenUtils.convertDpToPixel(mContext, offsetx);
             overlayOffsetY = DimenUtils.convertDpToPixel(mContext, 5);
-            matrix.postRotate(mRotateAngle, mCirclePositionX + (mCircleDrawable.getWidth() / 2), overlayTop + (mOverlayDrawable.getHeight() / 2));
+            matrix.postRotate(mRotateAngle, canvas.getWidth() + mPivotOffsetX, mCirclePositionY - mPivotOffsetY);
         } else if (mGravity == GRAVITY_LEFT) {
             overlayOffsetX = DimenUtils.convertDpToPixel(mContext, 45) + DimenUtils.convertDpToPixel(mContext, offsetx);
             overlayOffsetY = 0;
-            matrix.postRotate(-mRotateAngle, -mOverlayDrawable.getWidth() / 2 + (mOverlayDrawable.getWidth() / 2), overlayTop + (mOverlayDrawable.getHeight() / 2));
+            matrix.postRotate(-mRotateAngle, 0, mCirclePositionY);
         }
-        matrix.preTranslate(mCirclePositionX + overlayOffsetX, overlayTop - overlayOffsetY);
+
+        matrix.preTranslate(mCirclePositionX + overlayOffsetX + i, overlayTop - overlayOffsetY);
         canvas.drawBitmap(bitmap, matrix, new Paint());
     }
 
@@ -396,7 +363,8 @@ public class TimePicker extends View {
         text = canonizeNumber(number);
         float textX = getTextX(text);
         if (number == selectedNumber) {
-            canvas.drawText(text, textX, mCirclePositionY, mHighlightPaint);
+            int offsetY = mGravity == GRAVITY_LEFT ? DimenUtils.convertDpToPixel(mContext, 8) : DimenUtils.convertDpToPixel(mContext, 4);
+            canvas.drawText(text, textX, mCirclePositionY + offsetY, mHighlightPaint);
         } else {
             canvas.drawText(text, textX, mCirclePositionY, mTextPaint);
         }
@@ -413,12 +381,11 @@ public class TimePicker extends View {
     }
 
     private void rotateCircleOneNotch(Canvas canvas) {
-        int drawableLeft = getMeasuredWidth() - mCircleDrawable.getWidth();
-        int drawableTop = mCirclePositionY - mCircleDrawable.getHeight() / 2;
         if (mGravity == GRAVITY_LEFT) {
-            canvas.rotate(MAX_ANGLE / mNumbersCount, drawableLeft + (mCircleDrawable.getWidth() / 2), drawableTop + (mCircleDrawable.getHeight() / 2));
+            canvas.rotate(MAX_ANGLE / mNumbersCount, 0, mCirclePositionY);
         } else {
-            canvas.rotate(MAX_ANGLE / mNumbersCount, mCirclePositionX + (mCircleDrawable.getWidth() / 2), drawableTop + (mCircleDrawable.getHeight() / 2));
+            canvas.rotate(-MAX_ANGLE / mNumbersCount, canvas.getWidth() + mPivotOffsetX, mCirclePositionY - mPivotOffsetY);
+            ;
         }
     }
 
@@ -492,6 +459,10 @@ public class TimePicker extends View {
         });
     }
 
+    public boolean isRotationAnimating() {
+        return isRotationAnimating;
+    }
+
     private void startRotateToClosestAnimation(Animation animation) {
         animation.setInterpolator(new LinearInterpolator());
         animation.setDuration(SLOW_DOWN_ANIMATION_DURATION);
@@ -514,7 +485,7 @@ public class TimePicker extends View {
         startRotation(new Animation() {
             @Override
             protected void applyTransformation(float interpolatedTime, Transformation t) {
-                if (interpolatedTime < SLOW_DOWN_INTERPOLATION_LIMIT) {
+                if (interpolatedTime < Constants.SLOW_DOWN_INTERPOLATION_LIMIT) {
                     mRotateAngle = tmpAngle + 2 * mAngleBetweenNumbers * mYVelocity / Math.abs(mYVelocity) * interpolatedTime;
                 } else {
                     rotateToClosestNumber();
@@ -533,7 +504,11 @@ public class TimePicker extends View {
                 if (interpolatedTime < ROTATION_INTERPOLATION_LIMIT) {
                     mRotateAngle = tmpAngle + mYVelocity * ROTATION_STEP * interpolatedTime;
                 } else {
-                    startSlowDownAnimation();
+                    if (VelocityUtils.isLowVelocity(mYVelocity)) {
+                        rotateToClosestNumber();
+                    } else {
+                        startSlowDownAnimation();
+                    }
                 }
                 getCanonicalAngle();
                 invalidate();

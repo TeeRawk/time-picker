@@ -18,13 +18,10 @@
     </declare-styleable>
 
     <declare-styleable name="ClockFace">
-        <attr name="hoursClockColor" format="color"/>
-        <attr name="minutesClockColor" format="color"/>
         <attr name="hoursCount" format="enum">
             <enum name="twenty_four" value="24"/>
             <enum name="twelve" value="12"/>
         </attr>
-        <attr name="circleRadius" format="integer"/>
         <attr name="numbersSize" format="dimension"/>
         <attr name="hoursTextColor" format="color"/>
         <attr name="minutesTextColor" format="color"/>

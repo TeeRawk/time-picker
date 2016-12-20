@@ -3,7 +3,7 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
-    <color name="colorBg">#dedfe3</color>
+    <color name="colorBg">#dbebf9</color>
     <color name="clockBG">#8a572a</color>
     <color name="textColor">#011740</color>
     <color name="hoursSelectedColor">#2b85f5</color>

@@ -1,24 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              android:id="@+id/holder"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="@color/colorBg"
-    android:foreground="@drawable/foreground_clock"
-              android:orientation="vertical">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/holder"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorBg"
+    android:foregroundGravity="center"
+    android:orientation="vertical">
 
 
     <com.yalantis.library.ClockFace
         android:id="@+id/clock"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:hoursClockColor="@color/clockBG"
+        android:background="@color/textColor"
         app:hoursCount="twelve"
         app:hoursHighlightColor="@android:color/white"
-        app:hoursTextColor="@color/textColor"
-        app:minutesClockColor="@color/clockBG"
-        app:minutesHighlightColor="@android:color/white"
-        app:minutesTextColor="@color/textColor"/>
+        app:minutesHighlightColor="@android:color/white" />
+
 
 </FrameLayout>
