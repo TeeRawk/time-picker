@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="hours_piker" type="id"/>
+    <item name="minutes_picker" type="id"/>
+    <item name="position_view" type="id"/>
+    <item name="additional_wheel" type="id"/>
+    <item name="additional_wheel1" type="id"/>
+</resources>
