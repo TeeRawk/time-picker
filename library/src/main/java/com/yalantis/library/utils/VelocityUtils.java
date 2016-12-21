@@ -12,10 +12,22 @@ public class VelocityUtils {
     public final static int MAX_VELOCITY = 15;
     private static final int LOW_VELOCITY = 2;
 
+
+    /** checks if velocity is low, for  slow down wheel
+     * @param velocity
+     * @return
+     */
     public static boolean isLowVelocity(float velocity) {
-        return velocity > LOW_VELOCITY || velocity < -LOW_VELOCITY;
+        return Math.abs(velocity) > LOW_VELOCITY;
     }
 
+
+    /** returns velocity based on touch event
+     * @param event
+     * @param pointerId
+     * @param velocityTracker
+     * @return
+     */
     public static float computeVelocity(MotionEvent event, int pointerId, VelocityTracker velocityTracker) {
         velocityTracker.addMovement(event);
         velocityTracker.computeCurrentVelocity(MIN_VELOCITY, MAX_VELOCITY);
