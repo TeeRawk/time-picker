@@ -23,7 +23,7 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:24.0.0-beta1'
-    compile 'com.github.TeeRawk:time-picker:1beac01e4a'
+    compile project(":library")
 
 }
 
