@@ -165,7 +165,7 @@ class TimePicker extends View {
             mOverlayDrawable = BitmapFactory.decodeResource(context.getResources(), R.drawable.overlay_1);
             mSelectionBackgroundDrawable = BitmapFactory.decodeResource(context.getResources(), R.drawable.numbers_placeholder_1);
         } else if (mGravity == GRAVITY_RIGHT) {
-            TEXT_OFFSETX_DP = 94;
+            TEXT_OFFSETX_DP = 96;
             mOverlayDrawable = BitmapFactory.decodeResource(context.getResources(), R.drawable.overlay_2);
             mSelectionBackgroundDrawable = BitmapFactory.decodeResource(context.getResources(), R.drawable.numbers_placeholder_2);
         }
@@ -363,7 +363,7 @@ class TimePicker extends View {
         text = canonizeNumber(number);
         float textX = getTextX(text);
         if (number == selectedNumber) {
-            int offsetY = mGravity == GRAVITY_LEFT ? DimenUtils.convertDpToPixel(mContext, 8) : DimenUtils.convertDpToPixel(mContext, 4);
+            int offsetY = mGravity == GRAVITY_LEFT ? DimenUtils.convertDpToPixel(mContext, 8) : DimenUtils.convertDpToPixel(mContext, 2);
             canvas.drawText(text, textX, mCirclePositionY + offsetY, mHighlightPaint);
         } else {
             canvas.drawText(text, textX, mCirclePositionY, mTextPaint);
